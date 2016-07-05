@@ -37,5 +37,5 @@ plz replace <code>node_module/pixiv.js/index.js</code> with <code>pixiv.js_repla
 ##### P.S.
 + <code>page.js</code> & <code>user.js</code> supports <code>sys.argv[2]</code> for input
 
-# LICENSE
+### LICENSE
 WTFPL
