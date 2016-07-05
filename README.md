@@ -29,7 +29,7 @@ plz replace <code>node_module/pixiv.js/index.js</code> with <code>pixiv.js_repla
 + <code>3. Three_Times_A_Lady.bat </code> : download user, e.g http://www.pixiv.net/member_illust.php?id=id
 
 ##### For Linux:
-+ Open *.sh and replace it :
++ Open *.bat and replace it :
 + <code>%~dp0/node_modules/.bin/babel-node.cmd --harmony %~dp0/src/????.js</code> 
 + to
 + <code>node_modules/.bin/babel-node --harmony src/????.js</code>
