@@ -16,12 +16,10 @@ start();
 
 function preprocess(pageUrl){
 	
-	var pagedir = pageUrl.substring(pageUrl.lastIndexOf('word=')+5,pageUrl.length);	
+	var pagedir = pageUrl.substring(pageUrl.indexOf('?')+1,pageUrl.length);	
 	var ans = querystring.parse(pagedir, null, null);
-	for(var a in ans){
-		pagedir = a;
-		break;
-	}	
+	pagedir = ans.word;
+	
 	storeindex = __dirname + "/Storage/getPage/" + pagedir + '/';	
 	
 	fs.stat(storeindex , function(err, stats) {
@@ -67,27 +65,19 @@ function postprocess(pageUrl){
 
 function start(){
 	if(process.argv.length == 2){
-		
 		const rl = readline.createInterface(process.stdin, process.stdout);
-
 		rl.setPrompt('Site: ');
 		rl.prompt();
 
 		rl.on('line', (line) => {
-			//console.log(`Say what? I might have heard '${line.trim()}'`);
 			preprocess(line.trim());
+			rl.close();
 		}).on('close', () => {
-		  console.log('Have a great day!');
-		  process.exit(0);
 		});
 	}
 	else{
 		preprocess(process.argv[2]);
 	}
-	
-	/*setInterval(function(){
-		preprocess();
-	},1000*60*60*24);*/
 }
 
 function main(illustid){

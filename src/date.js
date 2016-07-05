@@ -49,9 +49,6 @@ function preprocess(){
 
 function start(){
 	preprocess();
-	/*setInterval(function(){
-		preprocess();
-	},1000*60*60*24);*/
 }
 
 function main(daily,day){
@@ -100,9 +97,6 @@ function main(daily,day){
 						}
 					});
 				}
-				/*var read = targz().createReadStream(storeindex.substring(0,storeindex.length-1));
-				var write = fs.createWriteStream(day+'.tar.gz');
-				read.pipe(write);*/
 			} catch(e){
 				console.log('errs = ' + err);
 			}

@@ -41,17 +41,6 @@ function preprocess(pageUrl){
 			}
 		});
 	});
-	
-	
-	
-	/*var ans = querystring.parse(pagedir, null, null);
-	for(var a in ans){
-		pagedir = a;
-		break;
-	}*/	
-	//storeindex = __dirname + "/Storage/getPage/" + pagedir + '/';	
-	
-	
 }
 
 function postprocess(pagedir){
@@ -59,9 +48,6 @@ function postprocess(pagedir){
 	var opts = querystring.stringify({ 'pages': 1, 'per_page': max });
 	
 	pix.userWorks(pagedir,opts).then(res => {
-		//console.log(res.response[0].id);
-		//console.log(JSON.stringify(res,null,4));
-		//console.log(res.response.length);
 		for( var i in res.response ){
 			main(res.response[i].id);
 		}
@@ -71,25 +57,19 @@ function postprocess(pagedir){
 function start(){
 	if(process.argv.length == 2){		
 		const rl = readline.createInterface(process.stdin, process.stdout);
-
 		rl.setPrompt('Site: ');
 		rl.prompt();
 
 		rl.on('line', (line) => {
-			//console.log(`Say what? I might have heard '${line.trim()}'`);
 			preprocess(line.trim());
+			rl.close();
 		}).on('close', () => {
-		  console.log('Have a great day!');
-		  process.exit(0);
+		  
 		});
 	}
 	else{
 		preprocess(process.argv[2]);
 	}
-	
-	/*setInterval(function(){
-		preprocess();
-	},1000*60*60*24);*/
 }
 
 function main(illustid){
@@ -108,15 +88,10 @@ function main(illustid){
 				var largename = prefix + i + postfix;
 				pixivImg(largename).then( output => {
 					var filename = title + '_' + author + '_' + output;
-					//var filename = '"' + title + '_' + author + '_' + output + '"';
 					filename = storeindex + filename.replace('/','.').replace(' ','_');
 					fs.rename(output,filename,function(err){
 						if(err){
 							console.log(err);
-							/*fs.rename(output,__dirname + "/Storage/getUser/" + 'Temporary' + '/' + output,function(err){
-								if(err)
-									console.log('rename failed.');
-							})*/;
 						}
 						else
 							console.log( filename +  " has stored.");

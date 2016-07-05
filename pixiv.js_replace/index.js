@@ -131,7 +131,7 @@ class Pixiv {
 			return Promise.reject(new Error('UserId is required.'));
 		}
 		
-		return this.authGot(`users/${id}/works`, {opts});
+		return this.authGot(`users/${id}/works`);
 	}
 	
 	userWorks(id,opts) {
