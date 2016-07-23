@@ -23,19 +23,19 @@ plz replace <code>node_module/pixiv.js/index.js</code> with <code>pixiv.js_repla
 + Remember to modify src/data.js 
 
 ##### For Windows:
-+ click *.bat
++ click bin/Windows/*.bat
 + <code>1. One_Is_The_Loneliest_Number.bat </code> : download daily ranking
 + <code>2. Two_Tickets_To_Paradise.bat </code> : download page, e.g. http://www.pixiv.net/search.php?order=popular_d&word=name
 + <code>3. Three_Times_A_Lady.bat </code> : download user, e.g http://www.pixiv.net/member_illust.php?id=id
 
 ##### For Linux:
-+ Open *.bat and replace it :
-+ <code>%~dp0/node_modules/.bin/babel-node.cmd --harmony %~dp0/src/????.js</code> 
-+ to
-+ <code>node_modules/.bin/babel-node --harmony src/????.js</code>
++ Same as Windows
 
 ##### P.S.
 + <code>page.js</code> & <code>user.js</code> supports <code>sys.argv[2]</code> for input
+
+##### For crontab:
++ using src/pipeline.js
 
 ### LICENSE
 WTFPL
