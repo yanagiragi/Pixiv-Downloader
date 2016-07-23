@@ -5,6 +5,8 @@ var dateFormat = require('dateformat');
 var pixiv = require('pixiv.js');
 var pixivImg = require('pixiv-img');
 var data = require('./data.js');
+var tar = require('tar');
+var fstream = require('fstream');
 
 const pix = data.getPixiv();
 var storeindex;
@@ -39,7 +41,7 @@ function preprocess(){
 					
 				}
 			});
-		} else {		  
+		} else {
 		  console.log('dir ' + storeindex + ' exists! using it ...');
 		  process.chdir(storeindex);
 		  main(daily,'.');
@@ -75,7 +77,6 @@ function main(daily,day){
 										
 							var prefix = large.substring(0,large.lastIndexOf('_p0')+2);
 							var postfix = large.substring(large.lastIndexOf('_p0')+3,large.length);
-										
 							for( var i = 0; i < page; ++i){
 								var largename = prefix + i + postfix;
 								pixivImg(largename).then( output => {
@@ -89,8 +90,9 @@ function main(daily,day){
 													console.log('rename failed.');
 											});
 										}
-										else
+										else{
 											console.log( filename +  " has stored.");
+										}
 									});
 								});
 							}

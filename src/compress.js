@@ -2,7 +2,7 @@ var fs = require('fs');
 var dateFormat = require('dateformat');
 var tar = require('tar');
 var fstream = require('fstream');
-
+const exec = require('child_process').exec;
 
 compress();
 
@@ -13,8 +13,6 @@ function compress(){
 	var tarindex = '../_Compress/' + day + '.tar';
 	
 	process.chdir(storeindex);
-	console.log("Compressing " + storeindex + "...");
-	
 
 	var dirDest = fs.createWriteStream(tarindex);
 
@@ -23,7 +21,7 @@ function compress(){
 	}
 	
 	function onEnd() {
-		  console.log('Packed!')
+		console.log('Packed!')
 	}
 	
 	var packer = tar.Pack({ noProprietary: true })
