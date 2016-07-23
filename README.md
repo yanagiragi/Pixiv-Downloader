@@ -36,6 +36,7 @@ plz replace <code>node_module/pixiv.js/index.js</code> with <code>pixiv.js_repla
 
 ##### For crontab:
 + using src/pipeline.js
++ add "cd $project_path/pixiv-downloader/src;../node_modules/.bin/babel-node --harmony pipeline.js" to crontab
 
 ### LICENSE
 WTFPL
