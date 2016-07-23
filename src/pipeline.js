@@ -3,7 +3,7 @@ var dateformat = require('dateformat');
 
 var remote = require('./data.js').getRemoteStorage();
 
-const ls = spawn('../node_modules/.bin/babel-node', ['--harmony' ,'../src/date.js']);
+const ls = spawn('../node_modules/.bin/babel-node', ['--harmony' ,'date.js']);
 
 ls.stdout.on('data', (data) => {
 	  console.log(`${data}`);
@@ -17,7 +17,7 @@ ls.on('close', (code) => {
 	
 	console.log(`child process exited with code ${code}`);
 	
-	const ls2 = spawn('../node_modules/.bin/babel-node', ['--harmony' ,'../src/compress.js']);
+	const ls2 = spawn('../node_modules/.bin/babel-node', ['--harmony' ,'compress.js']);
 	ls2.stdout.on('data', (data) => {
 	  console.log(`${data}`);
 	});
@@ -30,7 +30,7 @@ ls.on('close', (code) => {
 		
 		console.log(`child process exited with code ${code}`);
 		const ls3 = spawn('scp', 
-			[ '../src/Storage/_Compress/' + dateformat(new Date(),"yyyymmdd") + '.tar',
+			[ './Storage/_Compress/' + dateformat(new Date(),"yyyymmdd") + '.tar',
 			remote
 			]
 		);
