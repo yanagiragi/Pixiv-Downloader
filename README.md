@@ -29,7 +29,7 @@ plz replace <code>node_module/pixiv.js/index.js</code> with <code>pixiv.js_repla
 + <code>3. Three_Times_A_Lady.bat </code> : download user, e.g http://www.pixiv.net/member_illust.php?id=id
 
 ##### For Linux:
-+ Same as Windows
++ almost same as Windows, except it stores on bin/Linux
 
 ##### P.S.
 + <code>page.js</code> & <code>user.js</code> supports <code>sys.argv[2]</code> for input
