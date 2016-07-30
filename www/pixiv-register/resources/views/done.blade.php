@@ -41,7 +41,7 @@
                 <div class="title">Done</div>
                 <div class="content">
                     <br />Mail will be sent every 3:00 AM<br />
-                    <br />This service is composed of Laravel5, pixiv.js, and Faryne/api.neko.maid.tw
+                    <br />This service is composed of Laravel5, pixiv.js, startbootstrap-grayscale, and Faryne/api.neko.maid.tw
                 </div>
             </div>
         </div>
