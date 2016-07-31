@@ -1,5 +1,6 @@
 const pixiv = require('pixiv.js');
 const pixivImg = require('pixiv-img');
+const fs = require('fs');
 
 module.exports.getPixiv = function(){
 	return new pixiv('your_account','your_password');
@@ -7,7 +8,7 @@ module.exports.getPixiv = function(){
 module.exports.getRemoteStorage = function(){
 	return "your_remote_storage";
 }
-module.exports.fetchImg = function (illustid) {
+module.exports.fetchImg = function (illustid,storeindex) {
 	const pix = this.getPixiv();
 	pix.works(illustid).then(res => {
 		if(res.status == "success"){

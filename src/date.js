@@ -36,7 +36,7 @@ function preprocess(){
 				if(!err){
 					console.log('Create Dir Done.');
 					process.chdir(storeindex);
-					main(daily,'.');
+					main(daily);
 				} else {
 					console.log(err);
 					
@@ -65,7 +65,7 @@ function main(daily){
 					var url = json[a].url;
 					var illustid = url.substring(url.indexOf("_id=")+4,url.indexOf("&uarea"));
 					
-					data.fetchImg(illustid);
+					data.fetchImg(illustid,storeindex);
 				}
 			} catch(e){
 				console.log('errs = ' + err);

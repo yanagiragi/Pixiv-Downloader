@@ -29,7 +29,7 @@ ls.on('close', (code) => {
 	ls2.on('close', (code) => {
 		
 		console.log(`child process exited with code ${code}`);
-		const ls3 = spawn('scp', 
+		const ls3 = spawn('mv', 
 			[ './Storage/_Compress/' + dateformat(new Date(),"yyyymmdd") + '.tar',
 			remote
 			]

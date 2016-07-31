@@ -64,7 +64,7 @@ function postprocess(pagedir){
 	
 	pix.userWorks(pagedir,opts).then(res => {
 		for( var i in res.response ){
-			data.fetchImg(res.response[i].id);
+			data.fetchImg(res.response[i].id,storeindex);
 		}
 	});
 }
