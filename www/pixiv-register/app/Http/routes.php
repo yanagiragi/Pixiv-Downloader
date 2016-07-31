@@ -31,13 +31,11 @@ Route::post('/register', ['as' => 'register', function (Request $request) {
     }
     
     $mail = e($request->email);
-    if( App\mails::all()){
-        ; // if database is empty
-    } 
-    else if( App\mails::where('mail',$mail)->firstOrFail() ){
-        // if databases contains this mail, reject request
-        return View::make('done', array('title' => 'Error.','msg' => 'You had already subscribed.'));    
-    }
+    
+    if( App\mails::where('mail',$mail)->first() ){
+	     // if databases contains this mail, reject request
+	     return View::make('done', array('title' => 'Error.','msg' => 'You had already subscribed.'));    
+	}
 
     $task = new mails;
     $task->mail = $mail;
