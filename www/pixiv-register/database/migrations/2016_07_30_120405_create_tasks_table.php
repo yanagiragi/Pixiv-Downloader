@@ -15,6 +15,7 @@ class CreateTasksTable extends Migration
         Schema::create('mails', function (Blueprint $table) {
             $table->increments('id');
             $table->string('mail');
+            $table->string('hash');
             $table->timestamps();
         });
     }

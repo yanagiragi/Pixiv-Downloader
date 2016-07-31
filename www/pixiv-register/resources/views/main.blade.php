@@ -129,11 +129,14 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2" style="font-family:Lato;font-weight:bold;">
                 <h2 style="font-family:Lato;">Contact Author</h2>
+                
+                <p>
+                    <img src="https://avatars1.githubusercontent.com/u/7404517" class="img-responsive img-circle" 
+                        style="width: 20%;margin-left: 40%;" alt="yanagiragi"/>
+                </p>
+                
                 <p>Feel free to email us to provide some feedback, or to just say hello!</p>
                 <ul class="list-inline banner-social-buttons">
-                    <!--<li>
-                        <a href="https://twitter.com/SBootstrap" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
-                    </li>-->
                     <li>
                         <a href="mailto:hc102u@cs.ccu.edu.tw" class="btn btn-default btn-lg"><i class="fa fa-mail-forward fa-fw"></i> <span class="network-name">Mail</span></a>
                     </li>
@@ -148,14 +151,11 @@
         </div>
     </section>
 
-    <!-- Map Section -->
-    <!--<div id="map"></div>-->
-
     <!-- Footer -->
     <footer>
-        <div class="container text-center">
-            <!--<p>Copyright &copy; Your Website 2016</p>-->
-        </div>
+        <!--<div class="container text-center">
+            <p>Copyright &copy; Your Website 2016</p>
+        </div>-->
     </footer>
 
     <!-- jQuery -->
