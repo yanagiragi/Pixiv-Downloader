@@ -20,6 +20,7 @@
                 font-weight: bold;
                 font-family: 'Lato', sans-serif;
                 background: url('./img/bg.jpg');
+                background-size : 100%;
                 color: snow;
             }
 
