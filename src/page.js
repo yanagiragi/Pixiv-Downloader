@@ -71,7 +71,7 @@ function postprocess(pageUrl){
 				if(typeof(str) != "undefined"){
 					var illustid = str.substring(str.indexOf('id=')+3,str.length);
 					console.log('detect id: ' + illustid);
-					data.fetchImg(illustid);
+					data.fetchImg(illustid,storeindex);
 				}
 			});
 		}
