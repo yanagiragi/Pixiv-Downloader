@@ -112,6 +112,14 @@ return [
 
     'log_level' => env('APP_LOG_LEVEL', 'debug'),
 
+	'remoteAddr' => env('REMOTE_ADDR','localhost'),
+
+    'SendGridacc' => env('SENDGRID_ACCOUNT','null'),
+    'SendGridpwd' => env('SENDGRID_PASSWD','null'),
+    'SendGridccmail' => env('SENDGRID_CC_MAIL','null'),
+    'SendGridccname' => env('SENDGRID_CC_NAME','null'),
+    'SendGridfrom' => env('SENDGRID_FROM_DOMAIN','null'),
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers

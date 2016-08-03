@@ -37,10 +37,31 @@ Route::post('/register', ['as' => 'register', function (Request $request) {
 	     return View::make('done', array('title' => 'Error.','msg' => 'You had already subscribed.'));    
 	}
 
+	/* Save to DB */
     $task = new mails;
     $task->mail = $mail;
     $task->hash = urlencode(crypt(time(),rand(0,time())));
     $task->save();
+    
+    /* Send Notice Mail immediately */
+    $client = new GuzzleHttp\Client();
+    $res = $client->request('POST', 'https://api.sendgrid.com/api/mail.send.json', [
+        	'form_params'=> [
+        		'api_user' => config('app.SendGridacc'),
+	        	'api_key'  => config('app.SendGridpwd'),
+	        	'to' => $mail,
+	        	'toname' => $mail,
+	        	'cc' => config('app.SendGridccmail'),
+	        	'ccname' => config('app.SendGridccname'),
+	        	'subject' => 'Hello Pixiv! -- Subscription Notice',
+	        	'html' => '
+	        		<p>Thank you for subscribing!<br /><br />
+	        		If you regret, click
+	        		<a href="http://'.config('app.remoteAddr').'/cancel/'.$task->hash.'" />here</a>.</p>
+	        		',
+	        	'from' => config('app.SendGridfrom')
+	        ]
+        ]);
     
     return View::make('done', array('title' => 'Done.','msg' => 'Mail will be sent every 3:00 AM.'));
     

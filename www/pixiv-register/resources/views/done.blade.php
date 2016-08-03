@@ -49,7 +49,7 @@
                     <br />
                     <?php 
                         if ($title != 'Error.'){
-                            echo 'This service is composed of Laravel5, pixiv.js, startbootstrap-grayscale, and Faryne/api.neko.maid.tw';
+                            echo 'This service is composed of Laravel5, pixiv.js, and startbootstrap-grayscale';
                             echo '<br /><br /><br /><a href="/" class="btn btn-default btn-lg" style="font-size: inherit;">Return home</a>';
                         } else {
                             echo '<br /><a href="/" class="btn btn-default btn-lg" style="font-size: inherit;">Try again</a>';
