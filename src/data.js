@@ -1,6 +1,8 @@
 const pixiv = require('pixiv.js');
 const pixivImg = require('pixiv-img');
-const fs = require('fs');
+var gracefulFs = require('graceful-fs');
+var fs = gracefulFs.gracefulify(require('fs'));
+
 
 module.exports.getPixiv = function(){
 	return new pixiv('your_account','your_password');
