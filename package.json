@@ -1,0 +1,26 @@
+{
+  "name": "Pixiv-Downloader-master",
+  "version": "1.0.0",
+  "description": "Pixiv Download Tool based on pixiv.js , public-Pixiv API and 難以名狀的抓圖器API V2",
+  "main": "index.js",
+  "dependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-preset-es2015": "^6.9.0",
+    "cheerio": "^0.20.0",
+    "dateformat": "^1.0.12",
+    "fs": "^0.0.2",
+    "graceful-fs": "^4.1.9",
+    "pixiv-img": "^0.3.1",
+    "pixiv.js": "^0.11.0",
+    "request": "^2.72.0",
+    "tar.gz": "^1.0.5",
+    "url": "^0.11.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
