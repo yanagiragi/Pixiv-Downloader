@@ -1,3 +1,4 @@
+// this version is deprecated
 const fs = require('fs');
 const cheerio = require('cheerio');
 const request = require('request');
