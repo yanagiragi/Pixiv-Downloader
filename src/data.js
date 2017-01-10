@@ -13,6 +13,9 @@ module.exports.getRemoteStorage = function(){
 module.exports.getFilter = function(){
 	return ['bl','腐向け'];
 }
+module.exports.getNodePath = function(){
+	return 'your_node_excutive_path';
+}
 module.exports.fetchImg = function (illustid,storeindex) {
 
 	const pix = this.getPixiv();

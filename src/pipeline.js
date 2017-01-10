@@ -1,43 +1,37 @@
 const spawn = require('child_process').spawn;
-var dateformat = require('dateformat');
+const dateformat = require('dateformat');
+const remote = require('./data.js').getRemoteStorage();
+const node = require('./data.js').getNodePath();
 
-var remote = require('./data.js').getRemoteStorage();
+var date = '';
 
-const ls = spawn('../node_modules/.bin/babel-node', ['--harmony' ,'date.js']);
+// temporaily omit : fetch specific day issues.
+/*if(typeof process.argv[2] !== "undefined")
+	date = process.argv[2] */
 
-ls.stdout.on('data', (data) => {
-	  console.log(`${data}`);
-});
+var tasks = [
+	{ exec : node , params : (date == '') ? ['date.pixiv.js'] : ['date.pixiv.js','daily',date] },
+	{ exec : node , params : (date == '') ? ['compress.js'] : ['compress.js', date] },
+	{ exec : 'mv' , params : ['./Storage/_Compress/' + ( (date !== '') ? date : dateformat(new Date(),"yyyy-mm-dd") ) + '.tar', remote] },
+	{ exec : node , params : ['uploadGoogle.js', remote + ( (date !== '') ? date : dateformat(new Date(),"yyyy-mm-dd") ) + '.tar'] },
+	// cleanup
+	{ exec : 'rm' , params : ['-rf', './Storage/' + ((date !== '') ? date : dateformat(new Date(),"yyyy-mm-dd")) ] },
+	{ exec : 'rm' , params : ['-f', remote + ((date !== '') ? date : dateformat(new Date(),"yyyy-mm-dd")) + '.tar'] }
+]
 
-ls.stderr.on('data', (data) => {
-	  console.log(`stderr: ${data}`);
-});
+exec(0)
 
-ls.on('close', (code) => {
+function exec(now){
 	
-	console.log(`child process exited with code ${code}`);
-	
-	const ls2 = spawn('../node_modules/.bin/babel-node', ['--harmony' ,'compress.js']);
-	ls2.stdout.on('data', (data) => {
-	  console.log(`${data}`);
+	if(now >= tasks.length) process.exit();
+
+	var ls = spawn(tasks[now].exec, tasks[now].params);
+	ls.on('close', (code) => {
+		console.log('process ' + now + ' done with code ' + code)
+		exec(now + 1)
 	});
 
-	ls2.stderr.on('data', (data) => {
-		  console.log(`stderr: ${data}`);
-	});
-	
-	ls2.on('close', (code) => {
-		
-		console.log(`child process exited with code ${code}`);
-		const ls3 = spawn('mv', 
-			[ './Storage/_Compress/' + dateformat(new Date(),"yyyymmdd") + '.tar',
-			remote
-			]
-		);
-		ls3.on('close', (code) => {
-			console.log('Done.');
-			process.exit();
-		});
-	});
-});
-
+	ls.stderr.on('data', (data) => {
+		console.log(data.toString())
+	})
+}
