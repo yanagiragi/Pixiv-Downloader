@@ -5,7 +5,6 @@ const node = require('./data.js').getNodePath();
 
 var date = new Date();
 
-// temporaily omit : fetch specific day issues.
 if(typeof process.argv[2] !== "undefined")
 	date = process.argv[2] 
 else
