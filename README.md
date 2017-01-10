@@ -1,43 +1,22 @@
 # Pixiv-downloader
-Pixiv Download Tool based on pixiv.js , public-Pixiv API and 難以名狀的抓圖器API V2
+Pixiv Download Tool based on <a href="https://github.com/akameco/pixiv">pixiv.js</a> , <a href="https://github.com/akameco/pixiv-img">pixiv-img</a>
 
 ### Requirements 
-> Node.js v6.2.2 (ECMAScript 6 supported)
++ Node.js v6.2.2 (ECMAScript 6 supported)
++ Test Enviornment : Linux
 
-### Require modules:
->1. pixiv.js
->2. pixiv-img
->3. request
->4. cheerio
->5. fs
->6. querystring
->7. babel-cli
->8. babel-preset-es2015
->9. dateformat
->10. readline
->11. tar
-
-### How to Use
+### Before start
 #####[Important] 
-+ For those who download it without <code>node_module</code>, <br />
-plz replace <code>node_module/pixiv.js/index.js</code> with <code>pixiv.js_replace/index.js</code>
++ plz replace <code>node_module/pixiv.js/index.js</code> with <code>pixiv.js_replace/index.js</code>
 + Remember to modify src/data.js 
 
-##### For Windows:
-+ click bin/Windows/*.bat
-+ <code>1. One_Is_The_Loneliest_Number.bat </code> : download daily ranking
-+ <code>2. Two_Tickets_To_Paradise.bat </code> : download page, e.g. http://www.pixiv.net/search.php?order=popular_d&word=name
-+ <code>3. Three_Times_A_Lady.bat </code> : download user, e.g http://www.pixiv.net/member_illust.php?id=id
+### How to Use
+> Fetch Rankings: <code>node date.pixiv.js [mode] [date(format: yyyy-mm-dd)]</code>
+<br />  # remind that r-18 mode needs configure your pixiv account first <br /> <br />
+> Fetching Users : <code>node user.js [user_homepage_url]</code><br /><br />
+> Fetching Single Page: <code>node page.js [page_url]</code><br /><br />
+> Fetching All Follow's Picture: <code>node follow.js</code><br /><br />
+> (Self-Use) Fetching daily and store it to google drive or remote storage: <code>node pipeline.js[date(format: yyyy-mm-dd)]</code><br /><br />
 
-##### For Linux:
-+ Almost same as Windows, except it stores on bin/Linux
-
-##### P.S.
-+ <code>page.js</code> & <code>user.js</code> supports <code>sys.argv[2]</code> for input
-
-##### For crontab:
-+ using src/pipeline.js
-+ add "cd $project_path/pixiv-downloader/src;../node_modules/.bin/babel-node --harmony pipeline.js" to crontab
-
-### LICENSE
-WTFPL
+### Others
+> Register page based on laravel5 (www/pixiv-register)
