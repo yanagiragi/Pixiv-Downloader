@@ -3,20 +3,24 @@ const dateformat = require('dateformat');
 const remote = require('./data.js').getRemoteStorage();
 const node = require('./data.js').getNodePath();
 
-var date = '';
+var date = new Date();
 
 // temporaily omit : fetch specific day issues.
-/*if(typeof process.argv[2] !== "undefined")
-	date = process.argv[2] */
+if(typeof process.argv[2] !== "undefined")
+	date = process.argv[2] 
+else
+	date = dateformat(date.setDate(date.getDate() - 2), "yyyy-mm-dd")
+
+console.log('start pipeline on fetching ' + date + '...')
 
 var tasks = [
-	{ exec : node , params : (date == '') ? ['date.pixiv.js'] : ['date.pixiv.js','daily',date] },
-	{ exec : node , params : (date == '') ? ['compress.js'] : ['compress.js', date] },
-	{ exec : 'mv' , params : ['./Storage/_Compress/' + ( (date !== '') ? date : dateformat(new Date(),"yyyy-mm-dd") ) + '.tar', remote] },
-	{ exec : node , params : ['uploadGoogle.js', remote + ( (date !== '') ? date : dateformat(new Date(),"yyyy-mm-dd") ) + '.tar'] },
+	{ exec : node , params : ['date.pixiv.js','daily',date] },
+	{ exec : node , params : ['compress.js', date] },
+	{ exec : 'mv' , params : ['./Storage/_Compress/' + date + '.tar', remote] },
+	{ exec : node , params : ['uploadGoogle.js', remote + date + '.tar'] },
 	// cleanup
-	{ exec : 'rm' , params : ['-rf', './Storage/' + ((date !== '') ? date : dateformat(new Date(),"yyyy-mm-dd")) ] },
-	{ exec : 'rm' , params : ['-f', remote + ((date !== '') ? date : dateformat(new Date(),"yyyy-mm-dd")) + '.tar'] }
+	{ exec : 'rm' , params : ['-rf', './Storage/' + date ] },
+	{ exec : 'rm' , params : ['-f', remote + date + '.tar'] }
 ]
 
 exec(0)

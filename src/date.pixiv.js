@@ -1,9 +1,3 @@
-/*
-*	this code tried to use pixiv.js for getting pixiv_daily
-*	however there may be an issue:
-*	see https://github.com/akameco/pixiv/issues/8 for more explains
-*/
-
 const fs = require('fs');
 const cheerio = require('cheerio');
 const request = require('request');
@@ -23,7 +17,9 @@ function start(){
 }
 
 function preprocess(){
-	var day = dateFormat(new Date(), "yyyy-mm-dd");
+	let date = new Date()
+	date.setDate(date.getDate() - 2) // default date should be the day before yesterday due to pixiv ranking policy
+	var day = dateFormat(date, "yyyy-mm-dd");
 	
 	if(process.argv.length == 3 || process.argv.length == 4){
 		if(process.argv.length == 4){
@@ -39,6 +35,11 @@ function preprocess(){
 		console.log('using default date...');
 	}
 	
+	if((new Date(day).getDate() - date.getDate()) > 0){
+		console.error('Error query. The request date must before the day before yesterday.')
+		process.exit()
+	}
+
 	storeindex = __dirname + '/Storage/' + day + '/';
 
 	fs.stat(storeindex  , function(err, stats) {
@@ -105,14 +106,13 @@ function main(daily){
 	console.log('fetching day: ' + daily);
 	var processedDate = daily;
 	const pix = data.getPixiv();
+	
 	pix.ranking('all'
-		,{ mode : mode }
-		/*,{ date : processedDate }*/ // this part may cause error
+		,{ mode : mode ,date : processedDate}
 	).then( res => {
-		
 		var len = (res.response[0].works.length > max ) ? max : res.response[0].works.length;
 		if(len == 0){
-			console.log("Api not ready...We are Sorry");
+			console.error("Api not ready...We are Sorry");
 			process.exit();
 		}
 		for(var a=0; a < len; ++a){
