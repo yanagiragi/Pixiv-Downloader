@@ -117,7 +117,9 @@ function storeToken(token) {
 function uploadFile(auth, filename) {
   var service = google.drive({ version : 'v3', auth: auth})
   let buffer = readChunk.sync(__dirname + '/' + filename, 0, 4100)
-  let mimeTypeOfbuffer = fileType(buffer).mime  
+  let mimeTypeOfbuffer = fileType(buffer)
+  if(mimeTypeOfbuffer) mimeTypeOfbuffer = mimeTypeOfbuffer.mime  
+  else mimeTypeOfbuffer = "text/plain"
   let temp = filename.split('/')
   let storeName = temp[temp.length - 1]
 
