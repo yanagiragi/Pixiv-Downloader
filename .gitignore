@@ -47,3 +47,8 @@ Temporary Items
 .apdisk
 
 node_modules
+Storage/
+bin/
+src/_auth/
+src/tmp.txt
+src/data.js

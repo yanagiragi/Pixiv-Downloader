@@ -17,7 +17,7 @@ function start(){
 }
 
 function preprocess(){
-	let date = new Date()
+	var date = new Date()
 	date.setDate(date.getDate() - 2) // default date should be the day before yesterday due to pixiv ranking policy
 	var day = dateFormat(date, "yyyy-mm-dd");
 	
