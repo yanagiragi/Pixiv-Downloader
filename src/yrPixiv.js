@@ -12,9 +12,13 @@ class yrPixiv {
 		this.StoragePath = '../Storage'
 		this.GetUserPath = 'getUser'
 		this.GetPagePath = 'getPage'
+		this.FollowPath = 'Follow'
 		this.DailyPath = '.'
 		this.UserFilter = filt
 		this.DailyAmount = 50
+		
+		this.accessToken = ''
+		this.selfId = ''
 		
 		if (!fs.existsSync(this.StoragePath)) 
 			fs.mkdirSync(this.StoragePath)
@@ -22,9 +26,14 @@ class yrPixiv {
 		if (!fs.existsSync(`${this.StoragePath}/${this.GetUserPath}`)) 
 			fs.mkdirSync(`${this.StoragePath}/${this.GetUserPath}`)
 
+		if (!fs.existsSync(`${this.StoragePath}/${this.DailyPath}`)) 
+			fs.mkdirSync(`${this.StoragePath}/${this.DailyPath}`)
+
 		if (!fs.existsSync(`${this.StoragePath}/${this.GetPagePath}`)) 
 			fs.mkdirSync(`${this.StoragePath}/${this.GetPagePath}`)
 
+		if (!fs.existsSync(`${this.StoragePath}/${this.FollowPath}`)) 
+			fs.mkdirSync(`${this.StoragePath}/${this.FollowPath}`)
 	}
 
 	GetIllust(illustId) {
@@ -47,13 +56,18 @@ class yrPixiv {
 		})
 	}
 
-	GetNextInternal (info, earlyBreak=Boolean) {
+	GetNextInternal (
+		info, 
+		earlyBreak=Boolean, 
+		middleWareFunc= o => o.illusts.map(e => info.illusts.push(e))
+	) {
 		return new Promise((resolve, reject) => {
 			this.Pixiv.next().then(o => {
-				o.illusts.map(e => info.illusts.push(e))
-
+				
+				middleWareFunc(o)
+				
 				if (earlyBreak(info) && this.Pixiv.hasNext()) {
-					resolve(this.GetNextInternal(info, earlyBreak))
+					resolve(this.GetNextInternal(info, earlyBreak, middleWareFunc))
 				} else {
 					resolve(info)
 				}
@@ -121,9 +135,11 @@ class yrPixiv {
 		})
 	}
 
-	GetUser (userId) {
+	GetUser (userId, overrideStoragePath='') {
 		this.Pixiv.userDetail(userId).then(info => {
 			let path = `${this.StoragePath}/${this.GetUserPath}/${info.user.id}-${info.user.name}/`
+			if(overrideStoragePath.length > 0)
+				path = `${overrideStoragePath}/${info.user.id}-${info.user.name}/`
 			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
 
 			this.GetUserIllusts(userId).then(illustInfo => {
@@ -144,7 +160,7 @@ class yrPixiv {
 		})	
 	}
 
-	GetIllustDaily(info, earlyBreak) {
+	GetIllustDaily(info, earlyBreak=Boolean) {
 		return new Promise((resolve, reject) => {
 			this.Pixiv.illustRanking().then(o => {
 				o.illusts.map(e => info.illusts.push(e))
@@ -185,7 +201,7 @@ class yrPixiv {
 		})
 	}
 
-	GetSearch(query, info, earlyBreak){
+	GetSearch(query, info, earlyBreak=Boolean){
 		return new Promise((resolve, reject) => {
 			this.Pixiv.searchIllust(query).then(o => {
 				o.illusts.map(e => info.illusts.push(e))
@@ -236,6 +252,81 @@ class yrPixiv {
 
 	GetPixivImage (url, filename) {
 		PixivImg(url, filename).then(output => console.log(`Stored: ${output}`))
+	}
+
+	GetFollow(info, id, earlyBreak=Boolean){
+		return new Promise((resolve, reject) => {
+			this.Pixiv.userFollowing(id).then(o => {
+				o.userPreviews.map(e => info.userPreviews.push(e))
+				
+				if (this.Pixiv.hasNext()) {
+					resolve(
+						this.GetNextInternal(
+							info, 
+							earlyBreak, 
+							o => o.userPreviews.map(e => info.userPreviews.push(e))
+						)
+					)
+				} else {
+					resolve(info)
+				}
+			})
+		})
+	}
+
+	GetSelfId() {
+		return new Promise((resolve, reject) => {
+			// need refactor
+			this.Pixiv.login(this.Pixiv.username, this.Pixiv.password).then(userInfo => {
+				this.selfId = userInfo.user.id
+				this.accessToken = userInfo.access_token
+				resolve()
+			})
+		})
+	}
+
+	GetFollowing() {
+		// need refactor
+		this.GetSelfId()
+			.then( () => this.GetFollow({userPreviews: []}, this.selfId))
+			.then(userFollowingInfo => {
+				userFollowingInfo.userPreviews.map(userInfo => this.GetUser(userInfo.user.id, `${this.StoragePath}/${this.FollowPath}/`))
+			})
+	}
+
+	AddFollow(id) {
+		// Pixiv-App-Api Not Work, use native way from upbit/pixivpy
+		request({
+			method: 'POST',
+			url: 'https://public-api.secure.pixiv.net/v1/me/favorite-users.json',
+			headers : {
+				'Referer': 'http://spapi.pixiv.net/',
+				'User-Agent': 'PixivIOSApp/5.8.7',
+				'Authorization': `Bearer ${this.accessToken}`
+			},
+			form : {
+				'target_user_id': id,
+				'publicity': 'public'
+			}
+		}, (err, res, body) => {
+			console.log(`Follow ${id}.`)
+		})
+	}
+
+	CopyFollowing(acc, pwd){
+		let SourcePixiv = new yrPixiv(acc, pwd)
+		Promise.all([this.GetSelfId(), SourcePixiv.GetSelfId()])
+			.then(() => SourcePixiv.GetFollow({userPreviews: []}, SourcePixiv.selfId))
+			.then(sourceUserInfo => {
+				let sourceUserFollowingIds = sourceUserInfo.userPreviews.reduce((acc, ele) => acc.concat(ele.user.id), [])
+
+				this.GetFollow({userPreviews: []}, this.selfId).then(UserInfo => {
+					let userFollowingIds = UserInfo.userPreviews.reduce((acc, ele) => acc.concat(ele.user.id), [])
+					sourceUserFollowingIds
+						.filter(userId => userFollowingIds.indexOf(userId) === -1)
+						.map(userId => this.AddFollow(userId))
+				})
+			})
 	}
 }
 
