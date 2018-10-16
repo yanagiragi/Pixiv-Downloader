@@ -14,16 +14,17 @@ if (require.main === module) {
 	if (!mode) {
 		console.log('please define option')
 		process.exit()
-	} else {
+	} 
+
+	let yr = new yrPixiv(UsrAccount, UsrPassword, UsrFilter)
+
+	if (mode === 'user') {
+		if (typeof args.i !== 'object') 
+			args.i = [ args.i ]
 		
-		if (mode === 'user') {
-			if (typeof args.i !== 'object') {
-				args.i = [ args.i ]
-			}
-			
-			let yr = new yrPixiv(UsrAccount, UsrPassword, UsrFilter)
-			
-			args.i.map(id => yr.GetUser(id))
-		}
+		args.i.map(id => yr.GetUser(id))		
+	}
+	else if(mode === 'daily') {
+		yr.GetDaily()
 	}
 }

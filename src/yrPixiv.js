@@ -8,7 +8,9 @@ class yrPixiv {
 		this.Pixiv = new Pixiv(acc, pwd)
 		this.StoragePath = '../Storage'
 		this.GetUserPath = 'getUser'
-		this.userFilter = filt
+		this.DailyPath = '.'
+		this.UserFilter = filt
+		this.DailyAmount = 50
 
 		if (!fs.existsSync(this.StoragePath)) 
 			fs.mkdirSync(this.StoragePath)
@@ -18,15 +20,13 @@ class yrPixiv {
 
 	}
     
-	GetIllusts (userid) {
+	GetIllusts (userid, info = { 'illusts': [] }) {
 		return new Promise((resolve, reject) => {
-			let info = { 'illusts': [] }
-
 			this.Pixiv.userIllusts(userid).then(o => {
 				o.illusts.map(e => info.illusts.push(e))
 
 				if (this.Pixiv.hasNext()) {
-					resolve(this.GetIllustsInternal(info))
+					resolve(this.GetNextInternal(info))
 				} else {
 					resolve(info)
 				}
@@ -34,13 +34,13 @@ class yrPixiv {
 		})
 	}
 
-	GetIllustsInternal (info) {
+	GetNextInternal (info, earlyBreak=Boolean) {
 		return new Promise((resolve, reject) => {
 			this.Pixiv.next().then(o => {
 				o.illusts.map(e => info.illusts.push(e))
 
-				if (this.Pixiv.hasNext()) {
-					resolve(this.GetIllustsInternal(info))
+				if (earlyBreak(info) && this.Pixiv.hasNext()) {
+					resolve(this.GetNextInternal(info, earlyBreak))
 				} else {
 					resolve(info)
 				}
@@ -129,6 +129,47 @@ class yrPixiv {
 				this.DealIllustInfo(illustInfo)
 			})
 		})	
+	}
+
+	GetIllustDaily(info, earlyBreak) {
+		return new Promise((resolve, reject) => {
+			this.Pixiv.illustRanking().then(o => {
+				o.illusts.map(e => info.illusts.push(e))
+
+				if (this.Pixiv.hasNext()) {
+					resolve(this.GetNextInternal(info, earlyBreak))
+				} else {
+					resolve(info)
+				}
+			})
+		})
+	}
+
+	GetDaily() {
+		let earlyBreak = (illustInfo) => { return illustInfo.illusts.length <  this.DailyAmount }
+		this.GetIllustDaily({ 'illusts': [] }, earlyBreak).then(illustInfo => {
+			// return top 500 illusts
+			// instead we slice to amount we need
+			console.log(illustInfo.illusts.length)
+			illustInfo.illusts = illustInfo.illusts.splice(0, this.DailyAmount)
+
+			// Pixiv's Ranking is the ranking in two days ago
+			let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toLocaleString()
+			let path = `${this.StoragePath}/${this.DailyPath}/${date.substring(0, date.indexOf(' ') - 1)}/`
+			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
+
+			// Store path into illustInfo
+			illustInfo.path = path
+
+			// sort by from old to new
+			illustInfo.illusts = illustInfo.illusts.reverse()				
+
+			// dealing duplicated titles & title become empty string after sanitized
+			this.SanitizeIllustInfo(illustInfo)				
+
+			// get Url for each illust and call download function
+			this.DealIllustInfo(illustInfo)
+		})
 	}
 
 	GetPixivImage (url, filename) {
