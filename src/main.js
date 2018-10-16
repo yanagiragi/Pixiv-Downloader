@@ -27,4 +27,9 @@ if (require.main === module) {
 	else if(mode === 'daily') {
 		yr.GetDaily()
 	}
+	else if(mode === 'page') {
+		if (typeof args.p !== 'object') 
+			args.p = [ args.p ]
+		args.p.map(pageUrl => yr.GetSearchPage(pageUrl))
+	}
 }

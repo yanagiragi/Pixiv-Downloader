@@ -1,26 +1,39 @@
-const PixivImg = require('pixiv-img')
 const fs = require('fs')
+const request = require('request')
+const cheerio = require('cheerio')
 const sanitize = require('sanitize-filename')
 const Pixiv = require('Pixiv-app-api')
+const PixivImg = require('pixiv-img')
+
 
 class yrPixiv {
 	constructor(acc, pwd, filt){
 		this.Pixiv = new Pixiv(acc, pwd)
 		this.StoragePath = '../Storage'
 		this.GetUserPath = 'getUser'
+		this.GetPagePath = 'getPage'
 		this.DailyPath = '.'
 		this.UserFilter = filt
 		this.DailyAmount = 50
-
+		
 		if (!fs.existsSync(this.StoragePath)) 
 			fs.mkdirSync(this.StoragePath)
 		
 		if (!fs.existsSync(`${this.StoragePath}/${this.GetUserPath}`)) 
 			fs.mkdirSync(`${this.StoragePath}/${this.GetUserPath}`)
 
+		if (!fs.existsSync(`${this.StoragePath}/${this.GetPagePath}`)) 
+			fs.mkdirSync(`${this.StoragePath}/${this.GetPagePath}`)
+
+	}
+
+	GetIllust(illustId) {
+		return new Promise((resolve, reject) => {
+			resolve(this.Pixiv.illustDetail(illustId))
+		})
 	}
     
-	GetIllusts (userid, info = { 'illusts': [] }) {
+	GetUserIllusts (userid, info = { 'illusts': [] }) {
 		return new Promise((resolve, reject) => {
 			this.Pixiv.userIllusts(userid).then(o => {
 				o.illusts.map(e => info.illusts.push(e))
@@ -113,7 +126,7 @@ class yrPixiv {
 			let path = `${this.StoragePath}/${this.GetUserPath}/${info.user.id}-${info.user.name}/`
 			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
 
-			this.GetIllusts(userId).then(illustInfo => {
+			this.GetUserIllusts(userId).then(illustInfo => {
 				console.log(`Fetch IllustInfo [${info.user.name}] = ${illustInfo.illusts.length}`)
 
 				// Store path into illustInfo
@@ -167,6 +180,55 @@ class yrPixiv {
 			// dealing duplicated titles & title become empty string after sanitized
 			this.SanitizeIllustInfo(illustInfo)				
 
+			// get Url for each illust and call download function
+			this.DealIllustInfo(illustInfo)
+		})
+	}
+
+	GetSearch(query, info, earlyBreak){
+		return new Promise((resolve, reject) => {
+			this.Pixiv.searchIllust(query).then(o => {
+				o.illusts.map(e => info.illusts.push(e))
+	
+				if (this.Pixiv.hasNext()) {
+					resolve(this.GetNextInternal(info, earlyBreak))
+				} else {
+					resolve(info)
+				}
+			})
+		})
+	}
+
+	GetSearchPage(url)
+	{
+		// convert https://www.pixiv.net/search.php?word=%E9%BB%92%E3%82%BF%E3%82%A4%E3%83%84&order=date_d&p=4 to
+		// { word: '%E9%BB%92%E3%82%BF%E3%82%A4%E3%83%84', order: 'date_d', p: '4' }
+		let queryObject = {}
+		let query = url.substring(url.indexOf('?') + 1)
+			.split('&')
+			.map(e => e.split('='))
+			.map(e => queryObject[e[0]] = e[1])
+
+		// reuse variable
+		query = decodeURIComponent(queryObject.word)
+		let pageIndex = isNaN(parseInt(queryObject.p)) ? 1 : parseInt(queryObject.p)
+		let path = `${this.StoragePath}/${this.GetPagePath}/${query}_${pageIndex}/`
+		
+		if(!fs.existsSync(path))
+			fs.mkdirSync(path)
+		
+		// pixiv show 40 search results per page
+		let earlyBreak = (illustInfo) => { return illustInfo.illusts.length <  40 * pageIndex }
+		
+		this.GetSearch(query, {'illusts': [] }, earlyBreak).then(illustInfo => {
+			
+			// splice the result to exactly the amount we need
+			illustInfo.illusts = illustInfo.illusts.splice(40 * (pageIndex - 1), 40)
+			
+			this.SanitizeIllustInfo(illustInfo)
+
+			illustInfo.path = path
+			
 			// get Url for each illust and call download function
 			this.DealIllustInfo(illustInfo)
 		})
