@@ -1,21 +1,19 @@
 const dateformat = require('dateformat')
 const { spawn } = require('child_process')
 const node = require('./data').getNodePath()
-const remote = new (require('./yrPixiv'))('','',[]).StoragePath
+const yrPixivInstance = new (require('./yrPixiv'))('','',[])
+const StoragePath = `${yrPixivInstance.StoragePath}/${yrPixivInstance.DailyPath}/`
 
-let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toString()
-
-console.log('start pipeline on fetching ' + date + '...')
+let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toLocaleString()
+date = date.substring(0, date.indexOf(' '))
 
 var tasks = [
 	{ exec : node , params : ['main.js','-m', 'daily'] },
 	{ exec : node , params : ['compress.js', date] },
-	
-	/*{ exec : 'mv' , params : ['./Storage/_Compress/' + date + '.tar', remote] },
-	{ exec : node , params : ['uploadGoogle.js', remote + date + '.tar'] },
+	{ exec : node , params : ['uploadGoogle.js', `${StoragePath}/_Compress/${date}.tar`] },
 	// cleanup
-	{ exec : 'rm' , params : ['-rf', './Storage/' + date ] },
-	{ exec : 'rm' , params : ['-f', remote + date + '.tar'] }*/
+	{ exec : 'rm' , params : ['-rf', `${StoragePath}/${date}` ] },
+	{ exec : 'rm' , params : ['-f', `${StoragePath}/_Compress/${date}.tar`] }
 ]
 
 function StartTasks(now){
@@ -29,11 +27,14 @@ function StartTasks(now){
 		StartTasks(now + 1)
 	})
 
+	// ls.stdout.on('data', (data) => { console.log(data.toString()) })
+
 	ls.stderr.on('data', (data) => {
 		console.log(data.toString())
 	})
 }
 
-if(require.name === module){
+if(require.main === module){
+	console.log('start pipeline on fetching ' + date + '...')
 	StartTasks(0)
 }

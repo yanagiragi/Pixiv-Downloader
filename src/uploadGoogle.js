@@ -5,13 +5,13 @@ var googleAuth = require('google-auth-library');
 const readChunk = require('read-chunk');
 const fileType = require('file-type');
 
-// If modifying these scopes, delete your previously saved credentials
+// If modifying these scopes, devare your previously saved credentials
 // at ~/.credentials/drive-nodejs-quickstart.json
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) + '/.credentials/';
 const TOKEN_PATH = TOKEN_DIR + 'drive-nodejs-quickstart.json';
 
-const _parentFoldersId = ['folder_id_to_store_as_remote_storage'] 
+const _parentFoldersId = ['YOUR_FOLDER_ID'] 
 var _filename = '';
 
 if(typeof process.argv[2] !== 'undefined'){
@@ -116,12 +116,12 @@ function storeToken(token) {
  */
 function uploadFile(auth, filename) {
   var service = google.drive({ version : 'v3', auth: auth})
-  let buffer = readChunk.sync(__dirname + '/' + filename, 0, 4100)
-  let mimeTypeOfbuffer = fileType(buffer)
+  var buffer = readChunk.sync(__dirname + '/' + filename, 0, 4100)
+  var mimeTypeOfbuffer = fileType(buffer)
   if(mimeTypeOfbuffer) mimeTypeOfbuffer = mimeTypeOfbuffer.mime  
   else mimeTypeOfbuffer = "text/plain"
-  let temp = filename.split('/')
-  let storeName = temp[temp.length - 1]
+  var temp = filename.split('/')
+  var storeName = temp[temp.length - 1]
 
   service.files.create({
     resource: {

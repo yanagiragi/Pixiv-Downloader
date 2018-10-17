@@ -2,7 +2,7 @@ const fs = require('fs')
 const request = require('request')
 const cheerio = require('cheerio')
 const sanitize = require('sanitize-filename')
-const Pixiv = require('Pixiv-app-api')
+const Pixiv = require('pixiv-app-api')
 const PixivImg = require('pixiv-img')
 
 class yrPixiv {
@@ -178,12 +178,11 @@ class yrPixiv {
 		this.GetIllustDaily({ 'illusts': [] }, earlyBreak).then(illustInfo => {
 			// return top 500 illusts
 			// instead we slice to amount we need
-			console.log(illustInfo.illusts.length)
 			illustInfo.illusts = illustInfo.illusts.splice(0, this.DailyAmount)
 
 			// Pixiv's Ranking is the ranking in two days ago
 			let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toLocaleString()
-			let path = `${this.StoragePath}/${this.DailyPath}/${date.substring(0, date.indexOf(' ') - 1)}/`
+			let path = `${this.StoragePath}/${this.DailyPath}/${date.substring(0, date.indexOf(' '))}/`
 			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
 
 			// Store path into illustInfo

@@ -48,4 +48,9 @@ Temporary Items
 
 node_modules
 Storage/
-src/data.js
+data.js
+
+*.swp
+
+bin/
+src/_auth
