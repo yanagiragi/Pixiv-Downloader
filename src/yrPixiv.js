@@ -5,7 +5,6 @@ const sanitize = require('sanitize-filename')
 const Pixiv = require('Pixiv-app-api')
 const PixivImg = require('pixiv-img')
 
-
 class yrPixiv {
 	constructor(acc, pwd, filt){
 		this.Pixiv = new Pixiv(acc, pwd)
