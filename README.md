@@ -4,9 +4,9 @@ Pixiv Download Tool based on [akameco/pixiv-app-api](https://github.com/akameco/
 
 ### Requirements 
 
-+ Node.js v8.2.0
+* Node.js v8.2.0
 
-+ Enviornment : Ubuntu 16.04 LTS
+* Enviornment : Ubuntu 16.04 LTS
 
 ### For First Time:
 
@@ -48,4 +48,4 @@ Pixiv Download Tool based on [akameco/pixiv-app-api](https://github.com/akameco/
 
 ### Others
 
-> [**Deprecated**]Register page based on laravel5 (www/pixiv-register)
+* [**Deprecated**]Register page based on laravel5 (www/pixiv-register)
