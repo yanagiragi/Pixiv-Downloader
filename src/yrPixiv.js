@@ -135,6 +135,7 @@ class yrPixiv {
 
 	GetUser (userId, overrideStoragePath='') {
 		this.Pixiv.userDetail(userId).then(info => {
+			info.user.name = sanitize(info.user.name)
 			let path = `${this.StoragePath}/${this.GetUserPath}/${info.user.id}-${info.user.name}/`
 			if(overrideStoragePath.length > 0)
 				path = `${overrideStoragePath}/${info.user.id}-${info.user.name}/`
