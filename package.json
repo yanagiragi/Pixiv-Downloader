@@ -1,7 +1,7 @@
 {
-  "name": "Pixiv-Downloader-NewBranch",
-  "version": "1.0.0",
-  "description": "Pixiv Download Tool based on <a href=\"https://github.com/akameco/pixiv\">pixiv.js</a> , <a href=\"https://github.com/akameco/pixiv-img\">pixiv-img</a>",
+  "name": "pixiv_downloader",
+  "version": "2.0.0",
+  "description": "Pixiv Download Tool based on pixiv-app-api, pixiv-img",
   "main": ".eslintrc.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
