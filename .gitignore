@@ -46,11 +46,13 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-node_modules
-Storage/
-data.js
-
 *.swp
 
+node_modules
+Storage/
+
 bin/
+
 src/_auth
+src/data.js
+src/uploadGoogle.js
