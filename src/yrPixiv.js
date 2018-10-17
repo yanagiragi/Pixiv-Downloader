@@ -1,6 +1,5 @@
 const fs = require('fs')
 const request = require('request')
-const cheerio = require('cheerio')
 const sanitize = require('sanitize-filename')
 const Pixiv = require('pixiv-app-api')
 const PixivImg = require('pixiv-img')

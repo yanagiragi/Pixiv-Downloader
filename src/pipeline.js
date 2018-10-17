@@ -1,4 +1,3 @@
-const dateformat = require('dateformat')
 const { spawn } = require('child_process')
 const node = require('./data').getNodePath()
 const yrPixivInstance = new (require('./yrPixiv'))('','',[])
