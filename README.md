@@ -1,6 +1,6 @@
 # Pixiv-downloader
 
-Pixiv Download Tool based on [akameco/pixiv-app-api](https://github.com/akameco/pixiv-app-api) , [akameco/pixiv-img](https://github.com/akameco/pixiv-img)pixiv-img
+Pixiv Download Tool based on [akameco/pixiv-app-api](https://github.com/akameco/pixiv-app-api) , [akameco/pixiv-img](https://github.com/akameco/pixiv-img)
 
 ### Requirements 
 
