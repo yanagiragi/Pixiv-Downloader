@@ -1,30 +1,51 @@
 # Pixiv-downloader
 
-Pixiv Download Tool based on <a href="https://github.com/akameco/pixiv">pixiv.js</a> , <a href="https://github.com/akameco/pixiv-img">pixiv-img</a>
+Pixiv Download Tool based on [akameco/pixiv-app-api](https://github.com/akameco/pixiv-app-api) , [akameco/pixiv-img](https://github.com/akameco/pixiv-img)pixiv-img
 
 ### Requirements 
-+ Node.js v6.2.2 (ECMAScript 6 supported)
-+ Test Enviornment : Linux
 
-### Before start
-##### [Important] 
-+ plz replace <code>node_module/pixiv.js/index.js</code> with <code>pixiv.js_replace/index.js</code>
-+ Remember to modify src/data.js 
++ Node.js v8.2.0
 
-### How to Use
++ Enviornment : Ubuntu 16.04 LTS
 
-> Fetch Rankings: <code>node date.pixiv.js [mode] [date(format: yyyy-mm-dd)]</code>
+### For First Time:
 
-    remind that r-18 mode needs configure your pixiv account first 
+    cp src/data_template.js src/data.js
+    
+    setup account/password setting in src/data.js
+    
+    cp src/uploadGoogle_template.js src/uploadGoogle.js
+    
+    setup folder setting in src/uploadGoogle.js & setup credentials
+    
+### Run:
 
-> Fetching Users : <code>node user.js [user_homepage_url]</code>
+* Daily Fetch Ranking:
 
-> Fetching Single Page: <code>node page.js [page_url]</code>
+        cd src; node pipeline.js
+    
+* Other mode
 
-> Fetching All Follow's Picture: <code>node follow.js</code>
+    * Get User's all illust
 
-> (Self-Use) Fetching daily and store it to google drive or remote storage: <code>node pipeline.js[date(format: yyyy-mm-dd)]</code>
+            node main.js -m user -i 3367474 -i 9794
+    
+    * Get User's Daily Ranking (remind that r-18 mode needs configure your pixiv account first )
+        
+            node main.js -m daily
+    
+    * Get Single Search Page Result
+    
+            node main.js -m page -p "https://www.pixiv.net/search.php?word=FGO&order=date_d&p=4" -p "https://www.pixiv.net/search.php?word=FGO"
+    
+    * Get all following user illust
+    
+            node main.js -m follow
+    
+    * copy following (manual required)
+    
+            node main.js -m migrate
 
 ### Others
 
-> Register page based on laravel5 (www/pixiv-register)
+> [**Deprecated**]Register page based on laravel5 (www/pixiv-register)
