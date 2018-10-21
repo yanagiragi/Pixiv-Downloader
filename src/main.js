@@ -39,7 +39,7 @@ if (require.main === module) {
 	}
 
 	if(mode === 'migrate') {
-		// no argv support cause you should leave your info in console history
+		// no argv support cause you shouldn't leave your info in console history
 		let account = 'abc'
 		let password = 'abc'
 		if(account === 'abc' && password === 'abc'){
