@@ -4,7 +4,7 @@ const yrPixivInstance = new (require('./yrPixiv'))('','',[])
 const StoragePath = `${yrPixivInstance.StoragePath}/${yrPixivInstance.DailyPath}/`
 
 let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
-date = `${date.getYear()}-${date.getMonth()}-${date.getDay()}`
+date = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 
 var tasks = [
 	{ exec : node , params : ['main.js','-m', 'daily'] },

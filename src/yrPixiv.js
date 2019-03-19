@@ -182,7 +182,7 @@ class yrPixiv {
 
 			// Pixiv's Ranking is the ranking in two days ago
 			let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
-			date = `${date.getYear()}-${date.getMonth()}-${date.getDay()}`
+			date = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 			
 			let path = `${this.StoragePath}/${this.DailyPath}/${date.substring(0, date.indexOf(', '))}/`
 			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
