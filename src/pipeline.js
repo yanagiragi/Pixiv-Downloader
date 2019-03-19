@@ -3,7 +3,7 @@ const node = require('./data').getNodePath()
 const yrPixivInstance = new (require('./yrPixiv'))('','',[])
 const StoragePath = `${yrPixivInstance.StoragePath}/${yrPixivInstance.DailyPath}/`
 
-let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toLocaleString()
+let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toLocaleString().replace(/\//g,'-')
 date = date.substring(0, date.indexOf(' '))
 
 var tasks = [
