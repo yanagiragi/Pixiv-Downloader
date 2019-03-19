@@ -4,17 +4,22 @@ const sanitize = require('sanitize-filename')
 const Pixiv = require('pixiv-app-api')
 const PixivImg = require('pixiv-img')
 
+const { DateFormat } = require('./Config')
+
 class yrPixiv {
-	constructor(acc, pwd, filt){
-		this.Pixiv = new Pixiv(acc, pwd)
-		this.StoragePath = '../Storage'
-		this.GetUserPath = 'getUser'
-		this.GetPagePath = 'getPage'
-		this.FollowPath = 'Follow'
-		this.DailyPath = '.'
-		this.UserFilter = filt
-		this.DailyAmount = 50
-		
+	constructor(configs){
+
+		let { Account, Password, Filter, StoragePath="../Storage", GetUserPath="getUser", GetPagePath="getPage", FollowPath="getFollow", DailyPath="getDaily", DailyAmount=50 } = configs
+
+		this.Pixiv = new Pixiv(Account, Password)
+		this.StoragePath = StoragePath
+		this.GetUserPath = GetUserPath
+		this.GetPagePath = GetPagePath
+		this.FollowPath = FollowPath
+		this.DailyPath = DailyPath
+		this.UserFilter = Filter
+		this.DailyAmount = DailyAmount
+
 		this.accessToken = ''
 		this.selfId = ''
 		
@@ -181,8 +186,8 @@ class yrPixiv {
 			illustInfo.illusts = illustInfo.illusts.splice(0, this.DailyAmount)
 
 			// Pixiv's Ranking is the ranking in two days ago
-			let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toLocaleString()
-			let path = `${this.StoragePath}/${this.DailyPath}/${date.substring(0, date.indexOf(' '))}/`
+			let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+			let path = `${this.StoragePath}/${this.DailyPath}/${DateFormat(date)}/`
 			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
 
 			// Store path into illustInfo
@@ -196,6 +201,7 @@ class yrPixiv {
 
 			// get Url for each illust and call download function
 			this.DealIllustInfo(illustInfo)
+		
 		})
 	}
 
@@ -328,4 +334,4 @@ class yrPixiv {
 	}
 }
 
-module.exports = yrPixiv
+module.exports.yrPixiv = yrPixiv

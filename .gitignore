@@ -49,10 +49,7 @@ Temporary Items
 *.swp
 
 node_modules
-Storage/
+bin/Storage/
+_auth
 
-bin/
-
-src/_auth
-src/data.js
-src/uploadGoogle.js
+bin/yrPixiv.config.json

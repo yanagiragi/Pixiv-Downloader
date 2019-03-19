@@ -1,11 +1,15 @@
+#!/usr/bin/env node
+
 const minimist = require('minimist')
-const yrPixiv = require('./yrPixiv')
-const UsrData = require('./data')
-const UsrAccount = UsrData.getAccount()
-const UsrPassword = UsrData.getPassword()
-const UsrFilter = UsrData.getFilter()
+const { Config, yrPixiv } = require('..')
+const { Pipeline, UploadGoogle } = require('./Pipeline')
+
+const config = new Config( { ConfigPath: process.env.HOME + '/.yrPixiv/yrPixiv.config.json' } )
 
 if (require.main === module) {
+
+	process.chdir(config.WorkingDirectory)
+
 	let args = minimist(process.argv.slice(2))
 	let mode = args.m // mode
 
@@ -14,13 +18,13 @@ if (require.main === module) {
 		process.exit()
 	} 
 
-	let yr = new yrPixiv(UsrAccount, UsrPassword, UsrFilter)
+	let yr = new yrPixiv(config)
 
 	if (mode === 'user') {
 		if (typeof args.i !== 'object')
 			args.i = [ args.i ] // userId
 		
-		args.i.map(id => yr.GetUser(id))		
+		args.i.map(id => yr.GetUser(id))
 	}
 	
 	if(mode === 'daily') {
@@ -46,7 +50,18 @@ if (require.main === module) {
 			console.log('You Should Type Your Account/Password in main.js')
 		}
 		else{
-			yr.CopyFollowing(account, password)
+			yr.CopyFollowing(acc, pwd, filter)
 		}
+	}
+
+	if(mode === 'pipeline') {
+		new Pipeline(yr).Run()
+	}
+
+	if(mode === 'upload') {
+		if (typeof args.f !== 'object')
+			args.f = [ args.f ] // filepath
+		
+		args.f.map(filepath => new UploadGoogle(filepath, config).Run())
 	}
 }

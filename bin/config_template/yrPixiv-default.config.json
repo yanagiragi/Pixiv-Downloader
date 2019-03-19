@@ -1,0 +1,14 @@
+{
+    "Account": "***************************",
+    "Password": "***************************",
+    "WorkingDirectory": "~/Pixiv-Downloader/bin",
+    "Filter": ["bl","腐向け"],
+    "StoragePath" : "Storage",
+    "GetUserPath" : "User",
+    "GetPagePath": "Page",
+    "FollowPath": "Follow",
+    "DailyPath": "Daily",
+    "DailyAmount": 50,
+    "CILENTSECRET_PATH": "_auth/client_secret.json",
+    "PARENT_FOLDERS_ID": ["your_drive_folder_id"]
+}

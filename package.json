@@ -1,22 +1,25 @@
 {
   "name": "pixiv_downloader",
   "version": "2.0.0",
-  "description": "Pixiv Download Tool based on pixiv-app-api, pixiv-img",
-  "main": ".eslintrc.js",
+  "description": "Pixiv Download Tool based on pixiv-app-api",
+  "bin": {
+    "yrPixiv": "bin/cli.js"
+  },
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
+  "author": "yanagiragi",
+  "license": "ISC",
+  "homepage": "https://github.com/yanagiragi/Pixiv-Downloader#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yanagiragi/Pixiv-Downloader.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/yanagiragi/Pixiv-Downloader/issues"
-  },
-  "homepage": "https://github.com/yanagiragi/Pixiv-Downloader#readme",
+  },  
   "dependencies": {
     "file-type": "^10.0.0",
     "fs": "0.0.1-security",
