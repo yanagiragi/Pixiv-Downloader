@@ -3,8 +3,8 @@ const node = require('./data').getNodePath()
 const yrPixivInstance = new (require('./yrPixiv'))('','',[])
 const StoragePath = `${yrPixivInstance.StoragePath}/${yrPixivInstance.DailyPath}/`
 
-let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toLocaleString().replace(/\//g,'-')
-date = date.substring(0, date.indexOf(' '))
+let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+date = `${date.getYear()}-${date.getMonth()}-${date.getDay()}`
 
 var tasks = [
 	{ exec : node , params : ['main.js','-m', 'daily'] },
@@ -19,6 +19,8 @@ function StartTasks(now){
 	
 	if(now >= tasks.length) 
 		process.exit()
+
+	console.log(tasks[now])
 
 	let ls = spawn(tasks[now].exec, tasks[now].params)
 	ls.on('close', (code) => {
