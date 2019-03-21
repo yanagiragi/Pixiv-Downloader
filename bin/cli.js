@@ -2,7 +2,7 @@
 
 const minimist = require('minimist')
 const { Config, yrPixiv } = require('..')
-const { Pipeline, UploadGoogle } = require('./Pipeline')
+const { Pipeline, UploadGoogle } = require('./pipeline')
 
 const config = new Config( { ConfigPath: process.env.HOME + '/.yrPixiv/yrPixiv.config.json' } )
 
