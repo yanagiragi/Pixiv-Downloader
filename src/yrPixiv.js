@@ -4,7 +4,7 @@ const sanitize = require('sanitize-filename')
 const Pixiv = require('pixiv-app-api')
 const PixivImg = require('pixiv-img')
 
-const { DateFormat } = require('./Config')
+const { DateFormat, Config } = require('./Config')
 
 class yrPixiv {
 	constructor(configs){
@@ -19,6 +19,7 @@ class yrPixiv {
 		this.DailyPath = DailyPath
 		this.UserFilter = Filter
 		this.DailyAmount = DailyAmount
+		this.Config = configs
 
 		this.accessToken = ''
 		this.selfId = ''
@@ -275,7 +276,7 @@ class yrPixiv {
 				} else {
 					resolve(info)
 				}
-			})
+			}).catch(err => console.log(err))
 		})
 	}
 
@@ -319,7 +320,8 @@ class yrPixiv {
 	}
 
 	CopyFollowing(acc, pwd){
-		let SourcePixiv = new yrPixiv(acc, pwd)
+		let SourceConfig = Object.assign({...this.Config, Account: acc, Password: pwd})
+		let SourcePixiv = new yrPixiv(SourceConfig)
 		Promise.all([this.GetSelfId(), SourcePixiv.GetSelfId()])
 			.then(() => SourcePixiv.GetFollow({userPreviews: []}, SourcePixiv.selfId))
 			.then(sourceUserInfo => {
