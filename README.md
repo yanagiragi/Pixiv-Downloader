@@ -10,21 +10,21 @@ Pixiv Download Tool based on [akameco/pixiv-app-api](https://github.com/akameco/
 
 ### For First Time:
 
-    modified bin/config_template/yrPixiv-default.config.json, make sure it is same with [setuped path](https://github.com/yanagiragi/Pixiv-Downloader/blob/master/bin/cli.js#L7)
+* modified bin/config_template/yrPixiv-default.config.json, make sure it is same with [setuped path](https://github.com/yanagiragi/Pixiv-Downloader/blob/master/bin/cli.js#L7)
     
-    P.S. You may need to setup credentials in CILENTSECRET_PATH if you want to use upload features
+* P.S. You may need to setup credentials in CILENTSECRET_PATH if you want to use upload features
     
 ### Run:
 
 * Run with commands
 
-    npm i -g .
+    `npm i -g .`
     
-    yrPixiv -m $OPTIONS
+    `yrPixiv -m $OPTIONS`
 
 * Daily Fetch Ranking: (remind that r-18 mode needs configure your pixiv account first )
 
-        yrPixiv -m daily
+    `yrPixiv -m daily`
     
 * Other mode
 
