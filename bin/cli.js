@@ -8,6 +8,11 @@ const config = new Config( { ConfigPath: process.env.HOME + '/.yrPixiv/yrPixiv.c
 
 if (require.main === module) {
 
+	process.on('unhandledRejection', (reason, p) => {
+  		console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+		  // application specific logging, throwing an error, or other logic here
+	});
+		
 	process.chdir(config.WorkingDirectory)
 
 	let args = minimist(process.argv.slice(2))
@@ -50,7 +55,7 @@ if (require.main === module) {
 			console.log('You Should Type Your Account/Password in main.js')
 		}
 		else{
-			yr.CopyFollowing(acc, pwd, filter)
+			yr.CopyFollowing(account, password)
 		}
 	}
 

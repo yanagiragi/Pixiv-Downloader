@@ -20,6 +20,8 @@ class yrPixiv {
 		this.UserFilter = Filter
 		this.DailyAmount = DailyAmount
 
+		this.Config = configs
+
 		this.accessToken = ''
 		this.selfId = ''
 		
@@ -115,7 +117,7 @@ class yrPixiv {
 				let filename = `${illustInfo.path}${ele.title}${mime}`
 				
 				if (!fs.existsSync(filename)) { 
-					this.GetPixivImage(url, filename) 
+					this.GetPixivImage(url, filename)
 				}
 			} 
 			// many pictures in single illust
@@ -147,7 +149,7 @@ class yrPixiv {
 			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
 
 			this.GetUserIllusts(userId).then(illustInfo => {
-				console.log(`Fetch IllustInfo [${info.user.name}] = ${illustInfo.illusts.length}`)
+				// console.log(`Fetch IllustInfo [${info.user.name}] = ${illustInfo.illusts.length}`)
 
 				// Store path into illustInfo
 				illustInfo.path = path
@@ -161,7 +163,7 @@ class yrPixiv {
 				// get Url for each illust and call download function
 				this.DealIllustInfo(illustInfo)
 			})
-		})	
+		}).catch(err => console.log('fetch user error', err))
 	}
 
 	GetIllustDaily(info, earlyBreak=Boolean) {
@@ -256,25 +258,28 @@ class yrPixiv {
 	}
 
 	GetPixivImage (url, filename) {
-		PixivImg(url, filename).then(output => console.log(`Stored: ${output}`))
+		PixivImg(url, filename).then(output => console.log(`Stored: ${output}`)).catch(err => console.log(err))
 	}
 
 	GetFollow(info, id, earlyBreak=Boolean){
 		return new Promise((resolve, reject) => {
 			this.Pixiv.userFollowing(id).then(o => {
 				o.userPreviews.map(e => info.userPreviews.push(e))
-				
 				if (this.Pixiv.hasNext()) {
 					resolve(
 						this.GetNextInternal(
 							info, 
 							earlyBreak, 
 							o => o.userPreviews.map(e => info.userPreviews.push(e))
-						)
+						).catch(err => console.log(err.stack))
 					)
 				} else {
 					resolve(info)
 				}
+			}).catch(err => {
+				console.log(`fetch following info error: ${id}, this may occur sometimes`)
+				// console.log(`raw data`, err)
+				//resolve({})
 			})
 		})
 	}
@@ -319,7 +324,13 @@ class yrPixiv {
 	}
 
 	CopyFollowing(acc, pwd){
-		let SourcePixiv = new yrPixiv(acc, pwd)
+
+		let SourceConfig = Object.assign({},this.Config)
+		SourceConfig.Account = acc
+		SourceConfig.Password = pwd
+
+		let SourcePixiv = new yrPixiv(SourceConfig)
+
 		Promise.all([this.GetSelfId(), SourcePixiv.GetSelfId()])
 			.then(() => SourcePixiv.GetFollow({userPreviews: []}, SourcePixiv.selfId))
 			.then(sourceUserInfo => {
