@@ -27,6 +27,7 @@ class yrPixiv {
 		this.selfId = ''
 
 		this.PixivIDCachePath = PixivIDCachePath
+		this.PixivIDCache = []
 		try {
 			this.PixivIDCache = JSON.parse(fs.readFileSync(this.PixivIDCachePath))
 		}
@@ -141,9 +142,30 @@ class yrPixiv {
 		})
 	}
 
+	SavePixivCache() {
+		fs.writeJsonSync(this.PixivIDCachePath, this.PixivIDCache, {spaces: '\t'})
+	}
+
 	GetUserStoragePath(userInfo, overrideStoragePath='') {
 		let userId = userInfo.user.id
 		let username = sanitize(userInfo.user.name)
+
+		let matchedId = this.PixivIDCache.filter(x => x.id == userId)
+		if (matchedId.length > 0){
+			let matchedName = sanitize(matchedId[0].name)
+			if (username !== matchedName) {
+				// username has changed
+				let originalPath = `${this.StoragePath}/${this.GetUserPath}/${userId}-${matchedName}/`
+				let newPath = `${this.StoragePath}/${this.GetUserPath}/${userId}-${username}/`
+				console.log(`Detect new username ${username} for ${matchedName}, rename directory.`)
+				// fs.moveSync(originalPath, newPath)
+			}
+		}
+		else {
+			console.log(`Add ${userId}-${username}`)
+			this.PixivIDCache.push({'id': userId, 'name': username})
+		}
+
 		let path = `${this.StoragePath}/${this.GetUserPath}/${userId}-${username}/`
 		let overridePath = `${overrideStoragePath}/${userId}-${username}/`
 		return overrideStoragePath.length > 0 ? overridePath : path
@@ -273,13 +295,12 @@ class yrPixiv {
 			this.Pixiv.userFollowing(id).then(o => {
 				o.userPreviews.map(e => info.userPreviews.push(e))
 				if (this.Pixiv.hasNext()) {
-					resolve(
-						this.GetNextInternal(
+					let getNext = this.GetNextInternal(
 							info, 
 							earlyBreak, 
 							o => o.userPreviews.map(e => info.userPreviews.push(e))
-						).catch(err => console.log(err.stack))
-					)
+						)
+					resolve(getNext)
 				} else {
 					resolve(info)
 				}
@@ -308,6 +329,7 @@ class yrPixiv {
 			.then( () => this.GetFollow({userPreviews: []}, this.selfId))
 			.then(userFollowingInfo => {
 				userFollowingInfo.userPreviews.map(userInfo => this.GetUser(userInfo.user.id, `${this.StoragePath}/${this.FollowPath}/`))
+				this.SavePixivCache()
 			})
 	}
 
