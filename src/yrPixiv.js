@@ -28,12 +28,13 @@ class yrPixiv {
 
 		this.PixivIDCachePath = PixivIDCachePath
 		this.PixivIDCache = []
-		try {
-			this.PixivIDCache = JSON.parse(fs.readFileSync(this.PixivIDCachePath))
+
+		if(!fs.existsSync(this.PixivIDCachePath){
+			console.log(`Error Pasring PixivIDCachePath : ${this.PixivIDCachePath}, Create One.`)
+			fs.writeJsonSync(this.PixivIDCachePath, [])
 		}
-		catch (error) {
-			throw new Error(`Error Pasring PixivIDCachePath : ${this.PixivIDCachePath}`)
-			return
+		else {
+			this.PixivIDCache = JSON.parse(fs.readFileSync(this.PixivIDCachePath))
 		}
 		
 		fs.ensureDirSync(this.StoragePath)
