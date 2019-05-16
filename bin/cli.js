@@ -46,14 +46,15 @@ if (require.main === module) {
 	}
 
 	if(mode === 'migrate') {
-		// no argv support cause you shouldn't leave your info in console history
-		let account = 'abc'
-		let password = 'abc'
-		if(account === 'abc' && password === 'abc'){
-			console.log('You Should Type Your Account/Password in main.js')
+		let account = process.env.PIXIV_ACCOUNT ||  'placeholder'
+		let password = process.env.PIXIV_PASSWORD || 'placeholder'
+		
+		if(account === 'placeholder' || password === 'placeholder'){
+			console.log('No Account/Password found in enviornment variables')
 		}
 
 		else{
+			console.log(`Migrating ${account} to ${config.Account}`)
 			yr.CopyFollowing(account, password)
 		}
 	}
