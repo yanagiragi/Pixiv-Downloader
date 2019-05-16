@@ -3,19 +3,19 @@
 const minimist = require('minimist')
 const { Config, yrPixiv } = require('..')
 const { Pipeline, UploadGoogle } = require('./pipeline')
-
 const config = new Config( { ConfigPath: process.env.HOME + '/.yrPixiv/yrPixiv.config.json' } )
 
 if (require.main === module) {
 
 	process.on('unhandledRejection', (reason, p) => {
-  		console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-		  // application specific logging, throwing an error, or other logic here
-	});
+		console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
+	// application specific logging, throwing an error, or other logic here
+	})
 		
 	process.chdir(config.WorkingDirectory)
 
 	let args = minimist(process.argv.slice(2))
+
 	let mode = args.m // mode
 
 	if (!mode) {
@@ -28,10 +28,9 @@ if (require.main === module) {
 	if (mode === 'user') {
 		if (typeof args.i !== 'object')
 			args.i = [ args.i ] // userId
-		
 		args.i.map(id => yr.GetUser(id))
 	}
-	
+
 	if(mode === 'daily') {
 		yr.GetDaily()
 	}
@@ -39,10 +38,9 @@ if (require.main === module) {
 	if(mode === 'page') {
 		if (typeof args.p !== 'object') 
 			args.p = [ args.p ] // pageUrl
-		
 		args.p.map(pageUrl => yr.GetSearchPage(pageUrl))
 	}
-	
+
 	if(mode === 'follow') {
 		yr.GetFollowing()
 	}
@@ -54,6 +52,7 @@ if (require.main === module) {
 		if(account === 'abc' && password === 'abc'){
 			console.log('You Should Type Your Account/Password in main.js')
 		}
+
 		else{
 			yr.CopyFollowing(account, password)
 		}
