@@ -29,7 +29,7 @@ class yrPixiv {
 		this.PixivIDCachePath = PixivIDCachePath
 		this.PixivIDCache = []
 
-		if(!fs.existsSync(this.PixivIDCachePath){
+		if(!fs.existsSync(this.PixivIDCachePath)){
 			console.log(`Error Pasring PixivIDCachePath : ${this.PixivIDCachePath}, Create One.`)
 			fs.writeJsonSync(this.PixivIDCachePath, [])
 		}
@@ -151,15 +151,18 @@ class yrPixiv {
 		let userId = userInfo.user.id
 		let username = sanitize(userInfo.user.name)
 
-		let matchedId = this.PixivIDCache.filter(x => x.id == userId)
-		if (matchedId.length > 0){
-			let matchedName = sanitize(matchedId[0].name)
+		let matched = this.PixivIDCache.find(x => x.id == userId)
+		if (matched){
+			let matchedName = sanitize(matched.name)
 			if (username !== matchedName) {
 				// username has changed
+				console.log(`Detect new username ${username} for ${matchedName}, rename directory.`)
+				
+				matched.name = username
+				
 				let originalPath = `${this.StoragePath}/${this.GetUserPath}/${userId}-${matchedName}/`
 				let newPath = `${this.StoragePath}/${this.GetUserPath}/${userId}-${username}/`
-				console.log(`Detect new username ${username} for ${matchedName}, rename directory.`)
-				// fs.moveSync(originalPath, newPath)
+				fs.moveSync(originalPath, newPath)
 			}
 		}
 		else {
