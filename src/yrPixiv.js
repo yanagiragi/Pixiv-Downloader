@@ -144,12 +144,15 @@ class yrPixiv {
 	}
 
 	SavePixivCache() {
+		console.log(`Save ${this.PixivIDCachePath}.`)
 		fs.writeJsonSync(this.PixivIDCachePath, this.PixivIDCache, {spaces: '\t'})
 	}
 
 	GetUserStoragePath(userInfo, overrideStoragePath='') {
 		let userId = userInfo.user.id
 		let username = sanitize(userInfo.user.name)
+
+		let pathPrefix = overrideStoragePath.length > 0 ? `${overrideStoragePath}` : `${this.StoragePath}/${this.GetUserPath}`
 
 		let matched = this.PixivIDCache.find(x => x.id == userId)
 		if (matched){
@@ -160,44 +163,44 @@ class yrPixiv {
 				
 				matched.name = username
 				
-				let originalPath = `${this.StoragePath}/${this.GetUserPath}/${userId}-${matchedName}/`
-				let newPath = `${this.StoragePath}/${this.GetUserPath}/${userId}-${username}/`
-				fs.moveSync(originalPath, newPath)
+				let originalPath = `${pathPrefix}/${userId}-${matchedName}/`
+				let newPath = `${pathPrefix}/${userId}-${username}/`
+				if(fs.existsSync(originalPath))
+					fs.moveSync(originalPath, newPath, {overwrite: true})
 			}
 		}
 		else {
-			console.log(`Add ${userId}-${username}`)
+			console.log(`Add ${userId}-${username} to PixivIDCache`)
 			this.PixivIDCache.push({'id': userId, 'name': username})
 		}
 
-		let path = `${this.StoragePath}/${this.GetUserPath}/${userId}-${username}/`
-		let overridePath = `${overrideStoragePath}/${userId}-${username}/`
-		return overrideStoragePath.length > 0 ? overridePath : path
+		let path = `${pathPrefix}/${userId}-${username}/`
+		return path
 	}
 
 	GetUser (userId, overrideStoragePath='') {
-		this.Pixiv.userDetail(userId).then(info => {
-			
-			let path = this.GetUserStoragePath(info, overrideStoragePath)
-			
-			fs.ensureDirSync(path)
-
-			this.GetUserIllusts(userId).then(illustInfo => {
-				// console.log(`Fetch IllustInfo [${info.user.name}] = ${illustInfo.illusts.length}`)
-
-				// Store path into illustInfo
-				illustInfo.path = path
-
-				// sort by from old to new
-				illustInfo.illusts = illustInfo.illusts.reverse()				
-
-				// dealing duplicated titles & title become empty string after sanitized
-				this.SanitizeIllustInfo(illustInfo)				
-
-				// get Url for each illust and call download function
-				this.DealIllustInfo(illustInfo)
-			})
-		}).catch(err => console.log('fetch user error', err))
+		return new Promise((resolve, reject) => {
+			this.Pixiv.userDetail(userId)
+				.then(info => {
+					let path = this.GetUserStoragePath(info, overrideStoragePath)
+					fs.ensureDirSync(path)
+					this.GetUserIllusts(userId)
+						.then(illustInfo => {
+							// console.log(`Fetch IllustInfo [${info.user.name}] = ${illustInfo.illusts.length}`)
+							// Store path into illustInfo
+							illustInfo.path = path
+							// sort by from old to new
+							illustInfo.illusts = illustInfo.illusts.reverse()
+							// dealing duplicated titles & title become empty string after sanitized
+							this.SanitizeIllustInfo(illustInfo)
+							// get Url for each illust and call download function
+							this.DealIllustInfo(illustInfo)
+						})
+						.then(() => resolve())
+						.catch(err => console.log('fetch user error', err))
+				})
+				.catch(err => console.log('fetch user error', err))
+		})
 	}
 
 	GetIllustDaily(info, earlyBreak=Boolean) {
@@ -291,7 +294,9 @@ class yrPixiv {
 	}
 
 	GetPixivImage (url, filename) {
-		PixivImg(url, filename).then(output => console.log(`Stored: ${output}`)).catch(err => console.log(err))
+		PixivImg(url, filename)
+			.then(output => console.log(`Stored: ${output}`))
+			.catch(err => console.log(`Error when Saving ${url}, error = ${err}`))
 	}
 
 	GetFollow(info, id, earlyBreak=Boolean){
@@ -310,8 +315,6 @@ class yrPixiv {
 				}
 			}).catch(err => {
 				console.log(`fetch following info error: ${id}, this may occur sometimes`)
-				// console.log(`raw data`, err)
-				//resolve({})
 			})
 		})
 	}
@@ -328,11 +331,18 @@ class yrPixiv {
 	}
 
 	GetFollowing() {
-		// need refactor
 		this.GetSelfId()
-			.then( () => this.GetFollow({userPreviews: []}, this.selfId))
+			.then( () => this.GetFollow({userPreviews: []}, this.selfId) )
 			.then(userFollowingInfo => {
-				userFollowingInfo.userPreviews.map(userInfo => this.GetUser(userInfo.user.id, `${this.StoragePath}/${this.FollowPath}/`))
+				let tasks = userFollowingInfo.userPreviews.reduce((acc, ele) => {
+					return acc.concat(this.GetUser(ele.user.id, `${this.StoragePath}/${this.FollowPath}/`))
+				},[])
+				Promise.all(tasks).then(res => {
+					this.SavePixivCache()
+				})
+			})
+			.catch( err => {
+				console.log(`GetFollowing Error, err = ${err}`)
 				this.SavePixivCache()
 			})
 	}
