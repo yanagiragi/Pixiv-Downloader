@@ -6,7 +6,7 @@ class Config
     constructor({ ConfigPath=defaultConfigPath } = {}) {
         this.ConfigPath = ConfigPath
         let config = JSON.parse(fs.readFileSync(this.ConfigPath))
-        let { Account, Password, WorkingDirectory, Filter, StoragePath, GetUserPath, GetPagePath, FollowPath, DailyPath, DailyAmount, TOKEN_DIR, TOKEN_PATH, PARENT_FOLDERS_ID, CILENTSECRET_PATH } = config
+        let { Account, Password, WorkingDirectory, Filter, StoragePath, GetUserPath, GetPagePath, FollowPath, DailyPath, DailyAmount, TOKEN_DIR, TOKEN_PATH, PARENT_FOLDERS_ID, CILENTSECRET_PATH, PixivIDCachePath } = config
         this.Account = Account
         this.Password = Password        
         this.WorkingDirectory = WorkingDirectory
@@ -21,6 +21,7 @@ class Config
 		this.TOKEN_PATH = TOKEN_PATH
 		this.PARENT_FOLDERS_ID = PARENT_FOLDERS_ID
         this.CILENTSECRET_PATH = CILENTSECRET_PATH
+        this.PixivIDCachePath = PixivIDCachePath
     }
 }
 

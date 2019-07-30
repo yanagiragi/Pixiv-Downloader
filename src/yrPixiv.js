@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('fs-extra')
 const request = require('request')
 const sanitize = require('sanitize-filename')
 const Pixiv = require('pixiv-app-api')
@@ -9,7 +9,7 @@ const { DateFormat, Config } = require('./Config')
 class yrPixiv {
 	constructor(configs){
 
-		let { Account, Password, Filter, StoragePath="../Storage", GetUserPath="getUser", GetPagePath="getPage", FollowPath="getFollow", DailyPath="getDaily", DailyAmount=50 } = configs
+		let { Account, Password, Filter, StoragePath="../Storage", GetUserPath="getUser", GetPagePath="getPage", FollowPath="getFollow", DailyPath="getDaily", DailyAmount=50, PixivIDCachePath } = configs
 
 		this.Pixiv = new Pixiv(Account, Password)
 		this.StoragePath = StoragePath
@@ -25,21 +25,23 @@ class yrPixiv {
 
 		this.accessToken = ''
 		this.selfId = ''
+
+		this.PixivIDCachePath = PixivIDCachePath
+		this.PixivIDCache = []
+
+		if(!fs.existsSync(this.PixivIDCachePath)){
+			console.log(`Error Pasring PixivIDCachePath : ${this.PixivIDCachePath}, Create One.`)
+			fs.writeJsonSync(this.PixivIDCachePath, [])
+		}
+		else {
+			this.PixivIDCache = JSON.parse(fs.readFileSync(this.PixivIDCachePath))
+		}
 		
-		if (!fs.existsSync(this.StoragePath)) 
-			fs.mkdirSync(this.StoragePath)
-		
-		if (!fs.existsSync(`${this.StoragePath}/${this.GetUserPath}`)) 
-			fs.mkdirSync(`${this.StoragePath}/${this.GetUserPath}`)
-
-		if (!fs.existsSync(`${this.StoragePath}/${this.DailyPath}`)) 
-			fs.mkdirSync(`${this.StoragePath}/${this.DailyPath}`)
-
-		if (!fs.existsSync(`${this.StoragePath}/${this.GetPagePath}`)) 
-			fs.mkdirSync(`${this.StoragePath}/${this.GetPagePath}`)
-
-		if (!fs.existsSync(`${this.StoragePath}/${this.FollowPath}`)) 
-			fs.mkdirSync(`${this.StoragePath}/${this.FollowPath}`)
+		fs.ensureDirSync(this.StoragePath)
+		fs.ensureDirSync(`${this.StoragePath}/${this.GetUserPath}`)
+		fs.ensureDirSync(`${this.StoragePath}/${this.DailyPath}`)
+		fs.ensureDirSync(`${this.StoragePath}/${this.GetPagePath}`)
+		fs.ensureDirSync(`${this.StoragePath}/${this.FollowPath}`)
 	}
 
 	GetIllust(illustId) {
@@ -141,30 +143,64 @@ class yrPixiv {
 		})
 	}
 
+	SavePixivCache() {
+		console.log(`Save ${this.PixivIDCachePath}.`)
+		fs.writeJsonSync(this.PixivIDCachePath, this.PixivIDCache, {spaces: '\t'})
+	}
+
+	GetUserStoragePath(userInfo, overrideStoragePath='') {
+		let userId = userInfo.user.id
+		let username = sanitize(userInfo.user.name)
+
+		let pathPrefix = overrideStoragePath.length > 0 ? `${overrideStoragePath}` : `${this.StoragePath}/${this.GetUserPath}`
+
+		let matched = this.PixivIDCache.find(x => x.id == userId)
+		if (matched){
+			let matchedName = sanitize(matched.name)
+			if (username !== matchedName) {
+				// username has changed
+				console.log(`Detect new username ${username} for ${matchedName}, rename directory.`)
+				
+				matched.name = username
+				
+				let originalPath = `${pathPrefix}/${userId}-${matchedName}/`
+				let newPath = `${pathPrefix}/${userId}-${username}/`
+				if(fs.existsSync(originalPath))
+					fs.moveSync(originalPath, newPath, {overwrite: true})
+			}
+		}
+		else {
+			console.log(`Add ${userId}-${username} to PixivIDCache`)
+			this.PixivIDCache.push({'id': userId, 'name': username})
+		}
+
+		let path = `${pathPrefix}/${userId}-${username}/`
+		return path
+	}
+
 	GetUser (userId, overrideStoragePath='') {
-		this.Pixiv.userDetail(userId).then(info => {
-			info.user.name = sanitize(info.user.name)
-			let path = `${this.StoragePath}/${this.GetUserPath}/${info.user.id}-${info.user.name}/`
-			if(overrideStoragePath.length > 0)
-				path = `${overrideStoragePath}/${info.user.id}-${info.user.name}/`
-			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
-
-			this.GetUserIllusts(userId).then(illustInfo => {
-				// console.log(`Fetch IllustInfo [${info.user.name}] = ${illustInfo.illusts.length}`)
-
-				// Store path into illustInfo
-				illustInfo.path = path
-
-				// sort by from old to new
-				illustInfo.illusts = illustInfo.illusts.reverse()				
-
-				// dealing duplicated titles & title become empty string after sanitized
-				this.SanitizeIllustInfo(illustInfo)				
-
-				// get Url for each illust and call download function
-				this.DealIllustInfo(illustInfo)
-			})
-		}).catch(err => console.log('fetch user error', err))
+		return new Promise((resolve, reject) => {
+			this.Pixiv.userDetail(userId)
+				.then(info => {
+					let path = this.GetUserStoragePath(info, overrideStoragePath)
+					fs.ensureDirSync(path)
+					this.GetUserIllusts(userId)
+						.then(illustInfo => {
+							// console.log(`Fetch IllustInfo [${info.user.name}] = ${illustInfo.illusts.length}`)
+							// Store path into illustInfo
+							illustInfo.path = path
+							// sort by from old to new
+							illustInfo.illusts = illustInfo.illusts.reverse()
+							// dealing duplicated titles & title become empty string after sanitized
+							this.SanitizeIllustInfo(illustInfo)
+							// get Url for each illust and call download function
+							this.DealIllustInfo(illustInfo)
+						})
+						.then(() => resolve())
+						.catch(err => console.log('fetch user error', err))
+				})
+				.catch(err => console.log('fetch user error', err))
+		})
 	}
 
 	GetIllustDaily(info, earlyBreak=Boolean) {
@@ -192,7 +228,7 @@ class yrPixiv {
 			let date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
 			let path = `${this.StoragePath}/${this.DailyPath}/${DateFormat(date)}/`
 
-			if (!fs.existsSync(path)) { fs.mkdirSync(path) }
+			fs.ensureDirSync(path)
 
 			// Store path into illustInfo
 			illustInfo.path = path
@@ -238,8 +274,7 @@ class yrPixiv {
 		let pageIndex = isNaN(parseInt(queryObject.p)) ? 1 : parseInt(queryObject.p)
 		let path = `${this.StoragePath}/${this.GetPagePath}/${query}_${pageIndex}/`
 		
-		if(!fs.existsSync(path))
-			fs.mkdirSync(path)
+		fs.ensureDirSync(path)
 		
 		// pixiv show 40 search results per page
 		let earlyBreak = (illustInfo) => { return illustInfo.illusts.length <  40 * pageIndex }
@@ -259,7 +294,9 @@ class yrPixiv {
 	}
 
 	GetPixivImage (url, filename) {
-		PixivImg(url, filename).then(output => console.log(`Stored: ${output}`)).catch(err => console.log(err))
+		PixivImg(url, filename)
+			.then(output => console.log(`Stored: ${output}`))
+			.catch(err => console.log(`Error when Saving ${url}, error = ${err}`))
 	}
 
 	GetFollow(info, id, earlyBreak=Boolean){
@@ -267,20 +304,17 @@ class yrPixiv {
 			this.Pixiv.userFollowing(id).then(o => {
 				o.userPreviews.map(e => info.userPreviews.push(e))
 				if (this.Pixiv.hasNext()) {
-					resolve(
-						this.GetNextInternal(
+					let getNext = this.GetNextInternal(
 							info, 
 							earlyBreak, 
 							o => o.userPreviews.map(e => info.userPreviews.push(e))
-						).catch(err => console.log(err.stack))
-					)
+						)
+					resolve(getNext)
 				} else {
 					resolve(info)
 				}
 			}).catch(err => {
 				console.log(`fetch following info error: ${id}, this may occur sometimes`)
-				// console.log(`raw data`, err)
-				//resolve({})
 			})
 		})
 	}
@@ -297,11 +331,19 @@ class yrPixiv {
 	}
 
 	GetFollowing() {
-		// need refactor
 		this.GetSelfId()
-			.then( () => this.GetFollow({userPreviews: []}, this.selfId))
+			.then( () => this.GetFollow({userPreviews: []}, this.selfId) )
 			.then(userFollowingInfo => {
-				userFollowingInfo.userPreviews.map(userInfo => this.GetUser(userInfo.user.id, `${this.StoragePath}/${this.FollowPath}/`))
+				let tasks = userFollowingInfo.userPreviews.reduce((acc, ele) => {
+					return acc.concat(this.GetUser(ele.user.id, `${this.StoragePath}/${this.FollowPath}/`))
+				},[])
+				Promise.all(tasks).then(res => {
+					this.SavePixivCache()
+				})
+			})
+			.catch( err => {
+				console.log(`GetFollowing Error, err = ${err}`)
+				this.SavePixivCache()
 			})
 	}
 
