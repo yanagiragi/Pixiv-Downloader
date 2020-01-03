@@ -63,6 +63,18 @@ class yrPixiv {
 			})
 		})
 	}
+	
+	async GetUserIllustsSync (userid, info = { 'illusts': [] }) {
+		const currentInfo = await this.Pixiv.userIllusts(userid)
+		currentInfo.illusts.map(e => info.illusts.push(e))
+
+		while (this.Pixiv.hasNext()) {
+			const nextInfo = await this.Pixiv.next()
+			nextInfo.illusts.map(e => info.illusts.push(e))
+		}
+
+		return info
+	}
 
 	GetNextInternal (
 		info, 
@@ -142,6 +154,41 @@ class yrPixiv {
 			}
 		})
 	}
+	
+	async DealIllustInfoSync(illustInfo)
+	{
+		// get Url for each illust and call download function
+		for (const ele of illustInfo.illusts) {
+			// single pic in single illust
+			if (ele.metaPages.length === 0) {
+				let url = ele.metaSinglePage.originalImageUrl
+				let mime = url.substring(url.length - 4)
+				let filename = `${illustInfo.path}${ele.title}${mime}`
+				
+				if (!fs.existsSync(filename)) { 
+					await this.GetPixivImageSync(url, filename)
+				}
+			} 
+			// many pictures in single illust
+			else {
+				
+				let dir = `${illustInfo.path}${ele.title}`
+				
+				if (!fs.existsSync(dir)) { fs.mkdirSync(dir) }
+				
+				for(let index = 0; index < ele.metaPages.length; ++index) {
+					const ele2 = ele.metaPages[index]
+					let url = ele2.imageUrls.original
+					let mime = url.substring(url.length - 4)
+					let filename = `${dir}/${ele.title}_p${index}${mime}`
+					
+					if (!fs.existsSync(filename)) { 
+						await this.GetPixivImageSync(url, filename) 
+					}
+				}
+			}
+		}
+	}
 
 	SavePixivCache() {
 		console.log(`Save ${this.PixivIDCachePath}.`)
@@ -165,8 +212,11 @@ class yrPixiv {
 				
 				let originalPath = `${pathPrefix}/${userId}-${matchedName}/`
 				let newPath = `${pathPrefix}/${userId}-${username}/`
+
 				if(fs.existsSync(originalPath))
 					fs.moveSync(originalPath, newPath, {overwrite: true})
+				else
+					console.log(`${originalPath} does not exists, create ${newPath} instead.`)
 			}
 		}
 		else {
@@ -201,6 +251,33 @@ class yrPixiv {
 				})
 				.catch(err => console.log('fetch user error', err))
 		})
+	}
+	
+	async GetUserSync (userId, overrideStoragePath='', username='') {
+		
+		const placeholder = { user: { id: userId, name: username } }
+		const info = username == '' ? await this.Pixiv.userDetail(userId) : placeholder
+
+		if (username == '') {
+			console.log('pop')
+		}
+		
+		let path = this.GetUserStoragePath(info, overrideStoragePath)
+		fs.ensureDirSync(path)
+		
+		const illustInfo = await this.GetUserIllustsSync(userId)
+
+		// Store path into illustInfo
+		illustInfo.path = path
+		
+		// sort by from old to new
+		illustInfo.illusts = illustInfo.illusts.reverse()
+		
+		// dealing duplicated titles & title become empty string after sanitized
+		this.SanitizeIllustInfo(illustInfo)
+		
+		// get Url for each illust and call download function
+		await this.DealIllustInfoSync(illustInfo)
 	}
 
 	GetIllustDaily(info, earlyBreak=Boolean) {
@@ -298,6 +375,11 @@ class yrPixiv {
 			.then(output => console.log(`Stored: ${output}`))
 			.catch(err => console.log(`Error when Saving ${url}, error = ${err}`))
 	}
+	
+	async GetPixivImageSync (url, filename) {
+		const output = await PixivImg(url, filename)
+		console.log(`Stored: ${output}`)
+	}
 
 	GetFollow(info, id, earlyBreak=Boolean){
 		return new Promise((resolve, reject) => {
@@ -317,6 +399,22 @@ class yrPixiv {
 				console.log(`fetch following info error: ${id}, this may occur sometimes`)
 			})
 		})
+	}
+	
+	async GetFollowSync(info, id, earlyBreak=Boolean){
+		try {
+			const currentInfo = await this.Pixiv.userFollowing(id)
+			currentInfo.userPreviews.map(e => info.userPreviews.push(e))
+	
+			while (this.Pixiv.hasNext()) {
+				const nextInfo = await this.Pixiv.next()
+				nextInfo.userPreviews.map(e => info.userPreviews.push(e))
+			}
+		} catch (err) {
+			console.log(`fetch following info error: ${id}, this may occur sometimes`)
+		}
+
+		return info
 	}
 
 	GetSelfId() {
@@ -345,6 +443,57 @@ class yrPixiv {
 				console.log(`GetFollowing Error, err = ${err}`)
 				this.SavePixivCache()
 			})
+	}
+	
+	async GetFollowingSync() {
+		
+		function shuffle(sourceArray) {
+			for (var i = 0; i < sourceArray.length - 1; i++) {
+				var j = i + Math.floor(Math.random() * (sourceArray.length - i));
+				var temp = sourceArray[j];
+				sourceArray[j] = sourceArray[i];
+				sourceArray[i] = temp;
+			}
+			return sourceArray;
+		}
+		
+		// Preforms Login
+		const selfId = await this.GetSelfId()
+
+		let userFollowingInfo = { userPreviews: [] }
+	
+		let previousErr = []
+		if (fs.existsSync('err.json')) {
+			previousErr = JSON.parse(fs.readFileSync('err.json'))
+		}
+
+		if (previousErr.length > 0) {
+			console.log(`Recovery Mode, Left = ${previousErr.length}`)
+		}
+		else {
+			userFollowingInfo = await this.GetFollowSync({userPreviews: []}, this.selfId)
+		}
+
+		const userPreviews = previousErr.length > 0 ? previousErr : userFollowingInfo.userPreviews
+
+		let errUsers = []
+
+		for (const userPreview of shuffle(userPreviews)) {
+			const id = userPreview.user.id
+			const name = userPreview.user.name
+			const savePath = `${this.StoragePath}/${this.FollowPath}/`
+			try {
+				const result = await this.GetUserSync(id, savePath, name)
+				console.log('Done ', name)
+			} catch (err) {
+				console.log(`Failed On ${id} ${name}, ${err}`)
+				errUsers.push(userPreview)
+			}
+		}
+		
+		fs.writeFileSync('err.json', JSON.stringify(errUsers, null, 4))
+
+		this.SavePixivCache()
 	}
 
 	AddFollow(id) {

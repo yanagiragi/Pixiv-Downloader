@@ -42,7 +42,10 @@ if (require.main === module) {
 	}
 
 	if(mode === 'follow') {
-		yr.GetFollowing()
+		// yr.GetFollowing()
+		(async () => {
+			await yr.GetFollowingSync()
+		})()
 	}
 
 	if(mode === 'migrate') {
