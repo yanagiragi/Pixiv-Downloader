@@ -16,34 +16,49 @@ Pixiv Download Tool based on [akameco/pixiv-app-api](https://github.com/akameco/
     
 ### Run:
 
+*  globally install yrPixiv
+
+    `npm install -g .`    
+
+*  or just install prerequisite
+
+    `npm install .`
+
 * Run with commands
 
-    `npm i -g .`
-    
-    `yrPixiv -m $OPTIONS`
+    `yrPixiv -m $OPTIONS` or `node cli.js -m $OPTIONS``
 
 * Daily Fetch Ranking: (remind that r-18 mode needs configure your pixiv account first )
 
-    `yrPixiv -m daily`
+    `yrPixiv -m daily` or `node cli.js -m daily``
     
 * Other mode
 
     * Get User's all illust
 
-            yrPixiv -m user -i 3367474 -i 9794
+            `yrPixiv -m user -i 3367474 -i 9794` or `node cli.js -m user -i 3367474 -i 9794`
     
     * Get Single Search Page Result
     
-            yrPixiv -m page -p "https://www.pixiv.net/search.php?word=FGO&order=date_d&p=4" -p "https://www.pixiv.net/search.php?word=FGO"
+            `yrPixiv -m page -p "https://www.pixiv.net/search.php?word=FGO&order=date_d&p=4" -p "https://www.pixiv.net/search.php?word=FGO"` 
+            
+            or
+            
+            `node cli.js -m page -p "https://www.pixiv.net/search.php?word=FGO&order=date_d&p=4" -p "https://www.pixiv.net/search.php?word=FGO"`
     
     * Get all following user illust
     
-            yrPixiv -m follow
+            `yrPixiv -m follow` or `node cli.js -m follow`
     
-    * copy following (manual type account & password is required in `cli.js`)
+    * copy following (account & password Stored in enviroment variable "PIXIV_ACCOUNT" and "PIXIV_PASSWORD")
     
-            yrPixiv -m migrate
+            `yrPixiv -m migrate` or `node cli.js -m migrate`
+
+### Note:
+
+    * Currently Oauth Acccount are not allowed to login, check [here](https://github.com/upbit/pixivpy/issues/97)
 
 ### Others
 
 * [**Deprecated**] Register page based on laravel5 (www/pixiv-register)
+
