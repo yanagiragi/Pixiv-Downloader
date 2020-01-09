@@ -7,8 +7,8 @@ const PixivImg = require('pixiv-img')
 const { DateFormat, Config } = require('./Config')
 
 class yrPixiv {
-	constructor(configs){
 
+	constructor(configs){
 		let { Account, Password, Filter, StoragePath="../Storage", GetUserPath="getUser", GetPagePath="getPage", FollowPath="getFollow", DailyPath="getDaily", DailyAmount=50, PixivIDCachePath } = configs
 
 		this.Pixiv = new Pixiv(Account, Password)
@@ -487,7 +487,10 @@ class yrPixiv {
 				console.log('Done ', name)
 			} catch (err) {
 				console.log(`Failed On ${id} ${name}, ${err}`)
-				errUsers.push(userPreview)
+				// avoid loop when picture return 404
+				if (err.toString() != 'HTTPError: Response code 404 (Not Found)') {
+					errUsers.push(userPreview)
+				}
 			}
 		}
 		
