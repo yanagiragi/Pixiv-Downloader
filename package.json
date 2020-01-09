@@ -27,7 +27,7 @@
     "google-auth-library": "^0.10.0",
     "googleapis": "^43.0.0",
     "minimist": "^1.2.0",
-    "pixiv-app-api": "^1.0.3",
+    "pixiv-app-api": "^1.0.4",
     "pixiv-img": "^0.3.1",
     "read-chunk": "^3.2.0",
     "request": "^2.88.0",
