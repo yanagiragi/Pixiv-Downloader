@@ -1,4 +1,3 @@
-module.exports = Object.assign({}, 
-    require('./src/Config'),
-    require('./src/yrPixiv')
-)
+module.exports = {
+	yrPixiv: require('./src/yrPixiv')
+}

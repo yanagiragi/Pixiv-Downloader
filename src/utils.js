@@ -1,7 +1,7 @@
 const fs = require('fs-extra')
 const path = require('path')
 const sanitize = require('sanitize-filename')
-const PixivImg = require('pixiv-img')
+const fetch = require('node-fetch')
 
 /**
  * Return current userStoragePath based on userInfo and update PixivIDCache if needed.
@@ -45,15 +45,6 @@ function GetUserStoragePath(yrPixivInstance, userInfo, overrideStoragePath='') {
 }	
 
 /**
- * Save PixivIDCache in yrPixivInstance
- * @param {yrPixiv} yrPixivInstance 
- */
-function SavePixivCache(yrPixivInstance) {
-    console.log(`Save ${yrPixivInstance.PixivIDCachePath}.`)
-    fs.writeJsonSync(yrPixivInstance.PixivIDCachePath, yrPixivInstance.PixivIDCache, {spaces: '\t'})
-}
-
-/**
  * Return Promise when pixiv image download completes
  * @return {string} output - saved path of the image
  * @param {string} url 
@@ -61,9 +52,11 @@ function SavePixivCache(yrPixivInstance) {
  */
 async function GetPixivImage (url, filename) {
     console.assert(!fs.existsSync(filename))
-    const output = await PixivImg(url, filename)
-    console.log(`Stored: ${output}`)
-    return output    
+    const response = await fetch(url, { encoding : 'binary', headers: { 'Referer': 'http://www.pixiv.net/'}, timeout: 1000 * 5 })
+	const body = await response.text()
+	fs.writeFileSync(filename, body, 'binary')
+    console.log(`Stored: ${filename}`)
+    return filename
 }
 
 async function GetUserIllustName(yrPixivInstance, userid) {
@@ -71,9 +64,43 @@ async function GetUserIllustName(yrPixivInstance, userid) {
     return currentInfo.user.name
 }
 
+/**
+ * Return lists of object formatted in {url, savePath, filename} for download
+ * Note this does not create folder, folder should create outside
+ * @return {Array} illusts
+ * @param {Object} illustInfo 
+ */
+function ParseIllustsInfoToDownloadInfo(illustInfo) {
+    const illusts = []
+    illustInfo.illusts.map(ele => {
+        if (ele.metaPages.length === 0) { // single pic in single illust
+            const url = ele.metaSinglePage.originalImageUrl
+            const mime = url.substring(url.length - 4)
+            const filename = `${ele.id}-${sanitize(ele.title)}${mime}`
+            const savePath = illustInfo.storePath
+            illusts.push({url, savePath, filename})
+        } 
+        else { // multiple pictures in single illust        
+            const savePath = path.join(illustInfo.storePath, `${ele.id}-${ele.title}`)
+            ele.metaPages.map((ele2, index) => {
+                const url = ele2.imageUrls.original
+                const mime = url.substring(url.length - 4)
+                const filename = `${ele.id}-${sanitize(ele.title)}_p${index}${mime}`
+                illusts.push({url, savePath, filename})
+            })            
+        }
+    })
+    return illusts
+}
+
+function DateFormat(date) {
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+}
+
 module.exports = {
-    SavePixivCache,
     GetPixivImage,
     GetUserStoragePath,
-    GetUserIllustName
+    GetUserIllustName,
+    ParseIllustsInfoToDownloadInfo,
+    DateFormat
 }

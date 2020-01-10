@@ -21,17 +21,15 @@
     "url": "https://github.com/yanagiragi/Pixiv-Downloader/issues"
   },
   "dependencies": {
-    "file-type": "^10.11.0",
     "fs": "0.0.1-security",
     "fs-extra": "^8.1.0",
-    "google-auth-library": "^0.10.0",
-    "googleapis": "^43.0.0",
     "minimist": "^1.2.0",
+    "node-fetch": "^2.6.0",
+    "p-map": "^3.0.0",
     "pixiv-app-api": "^1.0.4",
-    "pixiv-img": "^0.3.1",
-    "read-chunk": "^3.2.0",
-    "request": "^2.88.0",
     "sanitize-filename": "^1.6.3"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint-plugin-jsdoc": "^20.0.5"
+  }
 }
