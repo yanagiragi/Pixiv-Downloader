@@ -53,7 +53,7 @@ function GetUserStoragePath(yrPixivInstance, userInfo, overrideStoragePath='') {
 async function GetPixivImage (url, filename) {
     console.assert(!fs.existsSync(filename))
     const response = await fetch(url, { encoding : 'binary', headers: { 'Referer': 'http://www.pixiv.net/'}, timeout: 1000 * 5 })
-	const body = await response.text()
+	const body = await response.buffer()
 	fs.writeFileSync(filename, body, 'binary')
     console.log(`Stored: ${filename}`)
     return filename
