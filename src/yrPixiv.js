@@ -307,6 +307,7 @@ class yrPixiv {
 		await this.Login()
 		await sourcePixiv.Login()
 
+
 		const sourceFollowingInfo = await Follow.GetFollowingInfo(sourcePixiv)
 		const followingInfo = await Follow.GetFollowingInfo(this)
 		const followingIds = followingInfo.map(x => x.id)
