@@ -1,75 +1,76 @@
 #!/usr/bin/env node
 
 const minimist = require('minimist')
-const { Config, yrPixiv } = require('..')
-const { Pipeline, UploadGoogle } = require('./pipeline')
-const config = new Config( { ConfigPath: process.env.HOME + '/.yrPixiv/yrPixiv.config.json' } )
+const { yrPixiv } = require('..')
 
-if (require.main === module) {
+const path = require('path')
 
-	process.on('unhandledRejection', (reason, p) => {
-		console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
-	// application specific logging, throwing an error, or other logic here
-	})
-		
-	process.chdir(config.WorkingDirectory)
+async function Run() {
 
-	let args = minimist(process.argv.slice(2))
-
-	let mode = args.m // mode
-
+	const args = minimist(process.argv.slice(2))
+	const mode = args.mode || args.m
+	
 	if (!mode) {
 		console.log('please define option')
 		process.exit()
 	} 
 
-	let yr = new yrPixiv(config)
+	const sync = args.sync || false
+	const pMap = args.pmap || true
 
-	if (mode === 'user') {
-		if (typeof args.i !== 'object')
-			args.i = [ args.i ] // userId
-		args.i.map(id => yr.GetUser(id))
-	}
-
-	if(mode === 'daily') {
-		yr.GetDaily()
+	const config = {
+		Account: process.env.PIXIV_ACCOUNT || 'placeholder'	,
+		Password: process.env.PIXIV_PASSWORD || 'placeholder',
+		StoragePath: path.join(__dirname, 'Storage'),
+		PixivIDCachePath: path.join(__dirname, 'Storage', 'PixivId.json'),
+		UseSync: sync,
+		UsePMap: pMap,
 	}
 	
-	if(mode === 'page') {
-		if (typeof args.p !== 'object') 
-			args.p = [ args.p ] // pageUrl
-		args.p.map(pageUrl => yr.GetSearchPage(pageUrl))
-	}
+	const yr = new yrPixiv(config)
 
-	if(mode === 'follow') {
-		// yr.GetFollowing()
-		(async () => {
-			await yr.GetFollowingSync()
-		})()
-	}
-
-	if(mode === 'migrate') {
-		let account = process.env.PIXIV_ACCOUNT ||  'placeholder'
-		let password = process.env.PIXIV_PASSWORD || 'placeholder'
-		
-		if(account === 'placeholder' || password === 'placeholder'){
-			console.log('No Account/Password found in enviornment variables')
+	if (mode === 'user') {
+		if (typeof args.i !== 'object') {
+			args.i = [ args.i ] // userId
 		}
+		for(const id of args.i) {
+			await yr.GetUser(id)
+		}
+	}
 
+	else if(mode === 'daily') {
+		await yr.GetDaily()
+	}
+	
+	else if(mode === 'page') {
+		if (typeof args.p !== 'object') {
+			args.p = [ args.p ] // pageUrl		
+		}
+		for(const pageUrl of args.p) {
+			await yr.GetSearchPage(pageUrl)
+		}		
+	}
+
+	else if(mode === 'follow') {
+		await yr.GetFollowing()
+	}
+
+	else if(mode === 'migrate') {
+		const account = process.env.MIGRATE_ACCOUNT ||  'placeholder'
+		const password = process.env.MIGRATE_PASSWORD || 'placeholder'		
+		if(account === 'placeholder' || password === 'placeholder'){
+			console.log('No Account/Password found in enviornment variables, Abort.')
+			process.exit(0)
+		}
 		else{
 			console.log(`Migrating ${account} to ${config.Account}`)
-			yr.CopyFollowing(account, password)
+			await yr.CopyFollowing(account, password)
 		}
 	}
 
-	if(mode === 'pipeline') {
-		new Pipeline(yr).Run()
-	}
+	process.exit(0)
+}
 
-	if(mode === 'upload') {
-		if (typeof args.f !== 'object')
-			args.f = [ args.f ] // filepath
-		
-		args.f.map(filepath => new UploadGoogle(filepath, config).Run())
-	}
+if (require.main === module) {
+	Run()
 }

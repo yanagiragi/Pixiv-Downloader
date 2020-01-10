@@ -1,38 +1,3 @@
-const path = require('path')
-const sanitize = require('sanitize-filename')
-
-/**
- * Return lists of object formatted in {url, savePath, filename} for download
- * Note this does not create folder, folder should create outside
- * @return {Array} illusts
- * @param {yrPixiv} yrPixivInstance 
- * @param {Object} illustInfo 
- */
-function GetIllustsDownloadInfo(yrPixivInstance, illustInfo) {
-    const illusts = []
-
-    illustInfo.illusts.map(ele => {
-        if (ele.metaPages.length === 0) { // single pic in single illust
-            const url = ele.metaSinglePage.originalImageUrl
-            const mime = url.substring(url.length - 4)
-            const filename = `${ele.id}-${sanitize(ele.title)}${mime}`
-            const savePath = illustInfo.storePath
-            illusts.push({url, savePath, filename})
-        } 
-        else { // multiple pictures in single illust        
-            const savePath = path.join(illustInfo.storePath, `${ele.id}-${ele.title}`)
-            ele.metaPages.map((ele2, index) => {
-                const url = ele2.imageUrls.original
-                const mime = url.substring(url.length - 4)
-                const filename = `${ele.id}-${sanitize(ele.title)}_p${index}${mime}`
-                illusts.push({url, savePath, filename})
-            })            
-        }
-    })
-
-    return illusts
-}
-
 /**
  * 
  * @param {*} yrPixivInstance 
@@ -76,8 +41,32 @@ async function GetDailyIllustsInfo(yrPixivInstance) {
     return rankingInfo
 }
 
+async function GetSearchIllustsInfo(yrPixivInstance, query, pageIndex) {
+    
+    // pixiv show 40 search results per page
+    const searchResultPerPage = 60
+    const searchInfo = { 'illusts': [], 'storePath': '' }
+
+    let currentInfo = await yrPixivInstance.Pixiv.searchIllust(query)
+    for( const info of currentInfo.illusts) {
+        searchInfo.illusts.push(info)
+    }
+    
+    while (yrPixivInstance.Pixiv.hasNext() && searchInfo.illusts.length < searchResultPerPage * pageIndex) {
+        currentInfo = await yrPixivInstance.Pixiv.next()
+        for( const info of currentInfo.illusts) {
+            searchInfo.illusts.push(info)
+        }           
+    }
+
+    // splice the result to exactly the amount we need
+    searchInfo.illusts = searchInfo.illusts.splice(searchResultPerPage * (pageIndex - 1), searchResultPerPage)
+
+    return searchInfo
+}
+
 module.exports = {
     GetUserIllustsInfo,
-    GetIllustsDownloadInfo,
-    GetDailyIllustsInfo
+    GetDailyIllustsInfo,
+    GetSearchIllustsInfo
 }
