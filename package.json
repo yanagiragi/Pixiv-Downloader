@@ -29,5 +29,7 @@
     "pixiv-app-api": "^1.0.4",
     "sanitize-filename": "^1.6.3"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint-plugin-jsdoc": "^20.0.5"
+  }
 }
