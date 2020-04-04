@@ -23,7 +23,7 @@
   "dependencies": {
     "fs": "0.0.1-security",
     "fs-extra": "^8.1.0",
-    "minimist": "^1.2.2",
+    "minimist": "^1.2.3",
     "node-fetch": "^2.6.0",
     "p-map": "^3.0.0",
     "pixiv-app-api": "^1.0.4",
