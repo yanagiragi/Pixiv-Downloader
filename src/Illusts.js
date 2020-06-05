@@ -5,68 +5,68 @@
  */
 async function GetUserIllustsInfo(yrPixivInstance, userInfo) {
     
-    const userIllustsInfo = { 'illusts': [], 'storePath': '' }
+	const userIllustsInfo = { 'illusts': [], 'storePath': '' }
 
-    let currentInfo = await yrPixivInstance.Pixiv.userIllusts(userInfo.id)
-    for (const info of currentInfo.illusts) {
-        userIllustsInfo.illusts.push(info)
-    }
+	let currentInfo = await yrPixivInstance.Pixiv.userIllusts(userInfo.id)
+	for (const info of currentInfo.illusts) {
+		userIllustsInfo.illusts.push(info)
+	}
 
-    while (yrPixivInstance.Pixiv.hasNext()) {
-        currentInfo = await yrPixivInstance.Pixiv.next()    
-        for (const info of currentInfo.illusts) {
-            userIllustsInfo.illusts.push(info)
-        }
-    }
+	while (yrPixivInstance.Pixiv.hasNext()) {
+		currentInfo = await yrPixivInstance.Pixiv.next()    
+		for (const info of currentInfo.illusts) {
+			userIllustsInfo.illusts.push(info)
+		}
+	}
 
-    return userIllustsInfo
+	return userIllustsInfo
 }
 
 async function GetDailyIllustsInfo(yrPixivInstance) {
 
-    const rankingInfo = { 'illusts': [], 'storePath': '' }
+	const rankingInfo = { 'illusts': [], 'storePath': '' }
 
-    let currentInfo = await yrPixivInstance.Pixiv.illustRanking()
-    for( const info of currentInfo.illusts) {
-        rankingInfo.illusts.push(info)
-    }
+	let currentInfo = await yrPixivInstance.Pixiv.illustRanking()
+	for( const info of currentInfo.illusts) {
+		rankingInfo.illusts.push(info)
+	}
 
-    while (yrPixivInstance.Pixiv.hasNext()) {
-        currentInfo = await yrPixivInstance.Pixiv.next()
-        for( const info of currentInfo.illusts) {
-            rankingInfo.illusts.push(info)
-        }           
-    }
+	while (yrPixivInstance.Pixiv.hasNext()) {
+		currentInfo = await yrPixivInstance.Pixiv.next()
+		for( const info of currentInfo.illusts) {
+			rankingInfo.illusts.push(info)
+		}           
+	}
 
-    return rankingInfo
+	return rankingInfo
 }
 
 async function GetSearchIllustsInfo(yrPixivInstance, query, pageIndex) {
     
-    // pixiv show 40 search results per page
-    const searchResultPerPage = 60
-    const searchInfo = { 'illusts': [], 'storePath': '' }
+	// pixiv show 40 search results per page
+	const searchResultPerPage = 60
+	const searchInfo = { 'illusts': [], 'storePath': '' }
 
-    let currentInfo = await yrPixivInstance.Pixiv.searchIllust(query)
-    for( const info of currentInfo.illusts) {
-        searchInfo.illusts.push(info)
-    }
+	let currentInfo = await yrPixivInstance.Pixiv.searchIllust(query)
+	for( const info of currentInfo.illusts) {
+		searchInfo.illusts.push(info)
+	}
     
-    while (yrPixivInstance.Pixiv.hasNext() && searchInfo.illusts.length < searchResultPerPage * pageIndex) {
-        currentInfo = await yrPixivInstance.Pixiv.next()
-        for( const info of currentInfo.illusts) {
-            searchInfo.illusts.push(info)
-        }           
-    }
+	while (yrPixivInstance.Pixiv.hasNext() && searchInfo.illusts.length < searchResultPerPage * pageIndex) {
+		currentInfo = await yrPixivInstance.Pixiv.next()
+		for( const info of currentInfo.illusts) {
+			searchInfo.illusts.push(info)
+		}           
+	}
 
-    // splice the result to exactly the amount we need
-    searchInfo.illusts = searchInfo.illusts.splice(searchResultPerPage * (pageIndex - 1), searchResultPerPage)
+	// splice the result to exactly the amount we need
+	searchInfo.illusts = searchInfo.illusts.splice(searchResultPerPage * (pageIndex - 1), searchResultPerPage)
 
-    return searchInfo
+	return searchInfo
 }
 
 module.exports = {
-    GetUserIllustsInfo,
-    GetDailyIllustsInfo,
-    GetSearchIllustsInfo
+	GetUserIllustsInfo,
+	GetDailyIllustsInfo,
+	GetSearchIllustsInfo
 }

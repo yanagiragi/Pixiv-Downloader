@@ -2,16 +2,19 @@
 
 const minimist = require('minimist')
 const { yrPixiv } = require('..')
-
 const path = require('path')
 
 async function Run() {
 
 	const args = minimist(process.argv.slice(2))
 	const mode = args.mode || args.m
+	const isVerbose = args.verbose === 'true' || args.v === 'true' || false
 	
 	if (!mode) {
-		console.log('please define option')
+		console.log('Detect No mode! Please define option, e.g.')
+		console.log('  node cli.js -m [ follow | daily | migrate ]')
+		console.log('  node cli.js -m page [-p $uri]')
+		console.log('  node cli.js -m user [-i $id]')
 		process.exit()
 	} 
 
@@ -25,8 +28,17 @@ async function Run() {
 		PixivIDCachePath: path.join(__dirname, 'Storage', 'PixivId.json'),
 		UseSync: sync,
 		UsePMap: pMap,
+		verbose: isVerbose
 	}
 	
+	if (config.Account === 'placeholder' || config.Password === 'placeholder')
+	{
+		console.log('Detect No Account/Password!')
+		console.log('Abort.')
+		return
+	}
+													
+
 	const yr = new yrPixiv(config)
 
 	if (mode === 'user') {
@@ -59,7 +71,7 @@ async function Run() {
 		const account = process.env.MIGRATE_ACCOUNT ||  'placeholder'
 		const password = process.env.MIGRATE_PASSWORD || 'placeholder'		
 		if(account === 'placeholder' || password === 'placeholder'){
-			console.log('No Account/Password found in enviornment variables, Abort.')
+			console.log('No Migrate Account/Password found in enviornment variables, Abort.')
 			process.exit(0)
 		}
 		else{

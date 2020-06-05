@@ -15,17 +15,18 @@ class yrPixiv {
 		const { 
 			Account, 
 			Password, 
-			StoragePath="Storage", 
-			GetUserPath="User", 
-			GetPagePath="Page",
-			FollowPath="Follow",
-			DailyPath="Daily", 
+			StoragePath='Storage', 
+			GetUserPath='User', 
+			GetPagePath='Page',
+			FollowPath='Follow',
+			DailyPath='Daily', 
 			DailyAmount=50,
 			UseSync=false,
 			UsePMap=true,
 			PMapConcurrency=5,
 			RestorePath=path.join(StoragePath, 'err.json'),
-			PixivIDCachePath=path.join(StoragePath, 'PixivIDCache.json')
+			PixivIDCachePath=path.join(StoragePath, 'PixivIDCache.json'),
+			verbose=false
 		} = config
 
 		this.StoragePath = StoragePath
@@ -37,11 +38,12 @@ class yrPixiv {
 		this.useSync = UseSync
 		this.usePMap = UsePMap
 		this.pMapConcurrency = PMapConcurrency
-        this.restorePath = RestorePath
+		this.restorePath = RestorePath
 		this.PixivIDCachePath = PixivIDCachePath
+		this.verbose = verbose
 		
 		// backup config
-        this.Config = config
+		this.Config = config
 
 		// setup pixiv-app-api instance
 		this.Pixiv = new Pixiv(Account, Password)		
@@ -52,9 +54,9 @@ class yrPixiv {
 
 		// load restore tasks
 		this.restoreTasks = []
-        if (fs.existsSync(this.restorePath)) {
-            this.restoreTasks = JSON.parse(fs.readFileSync(this.restorePath))
-        }		
+		if (fs.existsSync(this.restorePath)) {
+			this.restoreTasks = JSON.parse(fs.readFileSync(this.restorePath))
+		}		
 		
 		// load pixiv id caches
 		this.PixivIDCache = []
@@ -71,42 +73,44 @@ class yrPixiv {
 		fs.ensureDirSync(`${this.StoragePath}/${this.DailyPath}`)
 		fs.ensureDirSync(`${this.StoragePath}/${this.GetPagePath}`)
 		fs.ensureDirSync(`${this.StoragePath}/${this.FollowPath}`)
-    }
+	}
 
-    async Login() {
-        const userInfo = await this.Pixiv.login(this.Pixiv.username, this.Pixiv.password)
-        this.selfId = userInfo.user.id
+	async Login() {
+		const userInfo = await this.Pixiv.login(this.Pixiv.username, this.Pixiv.password)
+		this.selfId = userInfo.user.id
 		this.accessToken = userInfo.access_token
-    }
+	}
 
 	/**
 	 * Save PixivIDCache in yrPixivInstance
 	 */
-    SavePixivIDCache() {
-    	console.log(`Save ${this.PixivIDCachePath}.`)
-    	fs.writeJsonSync(this.PixivIDCachePath, this.PixivIDCache, {spaces: '\t'})
-    }
-   
+	SavePixivIDCache() {
+		if (this.verbose) {
+			console.log(`Save ${this.PixivIDCachePath}.`)
+		}
+		fs.writeJsonSync(this.PixivIDCachePath, this.PixivIDCache, {spaces: '\t'})
+	}
+
 	async GetUser_Impl (userInfo, overrideStoragePath='') {
 
-        const GetUserStoragePath = utils.GetUserStoragePath(this, userInfo, overrideStoragePath)
-        fs.ensureDirSync(GetUserStoragePath)
+		const GetUserStoragePath = utils.GetUserStoragePath(this, userInfo, overrideStoragePath)
+		fs.ensureDirSync(GetUserStoragePath)
 		
-        const illustInfo = await Illusts.GetUserIllustsInfo(this, userInfo)
+		const illustInfo = await Illusts.GetUserIllustsInfo(this, userInfo)
         
 		// Store path into illustInfo
 		illustInfo.storePath = GetUserStoragePath
 		
 		// sort by from old to new
-        illustInfo.illusts = illustInfo.illusts.reverse()		
+		illustInfo.illusts = illustInfo.illusts.reverse()		
 		
 		// parse illustInfo to download ready structure
-        const illustsDownloadInfo = utils.ParseIllustsInfoToDownloadInfo(illustInfo)
+		const illustsDownloadInfo = utils.ParseIllustsInfoToDownloadInfo(illustInfo)
 		
 		// filter needed downloadInfo
-        const downloadableInfo = illustsDownloadInfo.filter(downloadInfo => {
+		const downloadableInfo = illustsDownloadInfo.filter(downloadInfo => {
 			const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
-            return !fs.existsSync(savePath)                
+			return !fs.existsSync(savePath)                
 		})
 		
 		// ensure download path exists
@@ -114,23 +118,25 @@ class yrPixiv {
 			fs.ensureDirSync(downloadInfo.savePath)
 		})
 		
-        console.log(`Running ${userInfo.id}-${userInfo.name} user downloadable: ${downloadableInfo.length}`)
+		if (this.verbose) {
+			console.log(`Running ${userInfo.id}-${userInfo.name} user downloadable: ${downloadableInfo.length}`)
+		}
 
 		return this.DealIllustInfo(downloadableInfo)
-    }    
+	}    
 
 	async DealIllustInfo(downloadableInfo) {
 		if (this.useSync) {
 			const errs = []
-        	for(const downloadInfo of downloadableInfo){ 
-	            const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
-	            try {
-	            	await utils.GetPixivImage(downloadInfo.url, savePath)
+			for(const downloadInfo of downloadableInfo){
+				const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
+				try {
+					await utils.GetPixivImage(downloadInfo.url, savePath)
 				} catch (e) {
 					errs.push(e)
 				}
-	        }
-	        if (errs.length > 0) {
+			}
+			if (errs.length > 0) {
 				throw new Error(errs)
 			}
 		}
@@ -138,7 +144,7 @@ class yrPixiv {
 			if (this.usePMap) {
 				const mapper = async downloadInfo => {
 					const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
-			        return utils.GetPixivImage(downloadInfo.url, savePath)
+					return utils.GetPixivImage(downloadInfo.url, savePath)
 				}
 				try {
 					await pMap(downloadableInfo, mapper, { concurrency: this.pMapConcurrency, stopOnError: false })
@@ -151,12 +157,12 @@ class yrPixiv {
 			else {
 				const tasks = downloadableInfo.map(downloadInfo => {
 					const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
-		            return utils.GetPixivImage(downloadInfo.url, savePath)
-				})		        
-	    	    const results = await Promise.all(tasks.map(p => p.catch(e => e)))
-		        const invalidResults = results.filter(result => result instanceof Error);
-		        if (invalidResults.length > 0) {
-			        throw new Error(invalidResults)
+					return utils.GetPixivImage(downloadInfo.url, savePath)
+				})
+				const results = await Promise.all(tasks.map(p => p.catch(e => e)))
+				const invalidResults = results.filter(result => result instanceof Error)
+				if (invalidResults.length > 0) {
+					throw new Error(invalidResults)
 				}
 			}
 		}
@@ -183,63 +189,71 @@ class yrPixiv {
 
 	// APIs for cli.js
 
-    async GetFollowing() {		
+	async GetFollowing() {		
 
 		// Login since most API need Login
 		await this.Login()
         
-        if (this.restoreTasks.length > 0) {
-            console.log(`Recovery Mode, Left = ${this.restoreTasks.length}`)
-        }
-        
-        const savePath = path.join(this.StoragePath, this.FollowPath)
-        const errUsers = []                
-		const userPreviews = this.restoreTasks.length > 0 ? this.restoreTasks : await Follow.GetFollowingInfo(this)
-        const shuffle = function (sourceArray) {
-			for (var i = 0; i < sourceArray.length - 1; i++) {
-				var j = i + Math.floor(Math.random() * (sourceArray.length - i));
-				var temp = sourceArray[j];
-				sourceArray[j] = sourceArray[i];
-				sourceArray[i] = temp;
-			}
-			return sourceArray;
+		if (this.restoreTasks.length > 0) {
+			console.log(`Recovery Mode, Left = ${this.restoreTasks.length}`)
 		}
         
-        for (const userInfo of shuffle(userPreviews)) {
+		const savePath = path.join(this.StoragePath, this.FollowPath)
+		const errUsers = []                
+		const userPreviews = this.restoreTasks.length > 0 ? this.restoreTasks : await Follow.GetFollowingInfo(this)
+		const shuffle = function (sourceArray) {
+			for (var i = 0; i < sourceArray.length - 1; i++) {
+				var j = i + Math.floor(Math.random() * (sourceArray.length - i))
+				var temp = sourceArray[j]
+				sourceArray[j] = sourceArray[i]
+				sourceArray[i] = temp
+			}
+			return sourceArray
+		}
+        
+		for (const userInfo of shuffle(userPreviews)) {
 			try {
-                const result = await this.GetUser_Impl(userInfo, savePath)
-                console.log(`Done Fetching User: ${userInfo.name}.`)
+				const result = await this.GetUser_Impl(userInfo, savePath)
+				if (this.verbose) {
+					console.log(`Done Fetching User: ${userInfo.name}.`)
+				}
 			} catch (err) {
-				console.log(`Failed On ${userInfo.id}-${userInfo.name}, Error: ${err}`)
+				if (this.verbose) {
+					console.log(`Failed On ${userInfo.id}-${userInfo.name}, Error: ${err}`)
+				}
 				if (err.toString() != 'HTTPError: Response code 404 (Not Found)') { // avoid loop when picture return 404
 					errUsers.push(userInfo)
 				}
 			}
 		}        
         
-        console.log(`Save Restore File to ${this.restorePath}`)
-        fs.writeFileSync(this.restorePath, JSON.stringify(errUsers, null, 4))
+		if (errUsers.length > 0) {
+			console.log(`Save Err[${errUsers.length}] Restore File to ${this.restorePath}`)
+		}
+		fs.writeFileSync(this.restorePath, JSON.stringify(errUsers, null, 4))
 		
 		// Update Pixiv ID Cache
 		this.SavePixivIDCache()
-    }
+	}
     
-    async GetUser (userId) {
+	async GetUser (userId) {
 
 		// Login since most API need Login
 		await this.Login()
 
-        const userName = await utils.GetUserIllustName(this, userId)
-        return this.GetUser_Impl({ 'id': userId, 'name': userName })
+		const userName = await utils.GetUserIllustName(this, userId)
+		return this.GetUser_Impl({ 'id': userId, 'name': userName })
 	}
 	
-    async GetDaily() {
+	async GetDaily() {
 
 		// Login since most API need Login
 		await this.Login()
 
 		const dailyIllustsInfo = await Illusts.GetDailyIllustsInfo(this)
-		console.log('Fetch Daily Info Done.')
+		if (this.verbose) {
+			console.log('Fetch Daily Info Done.')
+		}
 		
 		// dailyIllustsInfo returns top 500 illusts
 		// instead we slice to amount we need
@@ -259,17 +273,19 @@ class yrPixiv {
 
 		const dailyIllustsDownloadInfo = utils.ParseIllustsInfoToDownloadInfo(dailyIllustsInfo)
 
-        const downloadableInfo = dailyIllustsDownloadInfo.filter(downloadInfo => {
-            const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
-            return !fs.existsSync(savePath)                
-        })
+		const downloadableInfo = dailyIllustsDownloadInfo.filter(downloadInfo => {
+			const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
+			return !fs.existsSync(savePath)                
+		})
 
-        console.log(`Daily ${formattedDate} downloadable: ${downloadableInfo.length}`)
+		if (this.verbose) {
+			console.log(`Daily ${formattedDate} downloadable: ${downloadableInfo.length}`)
+		}
 
 		return this.DealIllustInfo(downloadableInfo)
 	}
     
-    async GetSearchPage(url)
+	async GetSearchPage(url)
 	{
 		// Login since most API need Login
 		await this.Login()
@@ -290,14 +306,16 @@ class yrPixiv {
 		const searchDownloadInfo = utils.ParseIllustsInfoToDownloadInfo(searchInfo)
 		
 		const downloadableInfo = searchDownloadInfo.filter(downloadInfo => {
-            const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
-            return !fs.existsSync(savePath)                
+			const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
+			return !fs.existsSync(savePath)                
 		})
 		
-		console.log(`Start Downloading Search Query = ${query}, Page = ${pageIndex}, Downloadable = ${downloadableInfo.length}`)
+		if (this.verbose) {
+			console.log(`Start Downloading Search Query = ${query}, Page = ${pageIndex}, Downloadable = ${downloadableInfo.length}`)
+		}
 
 		return this.DealIllustInfo(downloadableInfo)		
-    }	
+	}	
 
 	async CopyFollowing(acc, pwd){		
 		const sourceConfig = Object.assign({...this.Config, Account: acc, Password: pwd})
@@ -313,7 +331,9 @@ class yrPixiv {
 		const followingIds = followingInfo.map(x => x.id)
 		const unfollowInfos = sourceFollowingInfo.filter(x => !followingIds.includes(x.id))
 
-		console.log(`Unfollow users: ${unfollowInfos.length}.`)
+		if (this.verbose) {
+			console.log(`Unfollow users: ${unfollowInfos.length}.`)
+		}
 
 		for(const userInfo of unfollowInfos) {
 			await this.AddFollow(userInfo)
