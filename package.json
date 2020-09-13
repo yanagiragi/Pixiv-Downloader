@@ -24,7 +24,7 @@
     "fs": "0.0.1-security",
     "fs-extra": "^8.1.0",
     "minimist": "^1.2.5",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "p-map": "^3.0.0",
     "pixiv-app-api": "^1.2.1",
     "sanitize-filename": "^1.6.3"
