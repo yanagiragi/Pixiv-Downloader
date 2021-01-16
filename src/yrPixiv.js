@@ -130,9 +130,8 @@ class yrPixiv {
 		if (this.useSync) {
 			const errs = []
 			for(const downloadInfo of downloadableInfo){
-				const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
 				try {
-					await utils.GetPixivImage(downloadInfo.url, savePath)
+					await utils.GetPixivImage(downloadInfo.url, downloadInfo.savePath, downloadInfo.filename)
 				} catch (e) {
 					errs.push(e)
 				}
@@ -144,8 +143,7 @@ class yrPixiv {
 		else {
 			if (this.usePMap) {
 				const mapper = async downloadInfo => {
-					const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
-					return utils.GetPixivImage(downloadInfo.url, savePath)
+					return utils.GetPixivImage(downloadInfo.url, downloadInfo.savePath, downloadInfo.filename)
 				}
 				try {
 					await pMap(downloadableInfo, mapper, { concurrency: this.pMapConcurrency, stopOnError: false })
@@ -157,8 +155,7 @@ class yrPixiv {
 			}
 			else {
 				const tasks = downloadableInfo.map(downloadInfo => {
-					const savePath = path.join(downloadInfo.savePath, downloadInfo.filename)
-					return utils.GetPixivImage(downloadInfo.url, savePath)
+					return utils.GetPixivImage(downloadInfo.url, downloadInfo.savePath, downloadInfo.filename)
 				})
 				const results = await Promise.all(tasks.map(p => p.catch(e => e)))
 				const invalidResults = results.filter(result => result instanceof Error)
@@ -291,10 +288,12 @@ class yrPixiv {
 		// Login since most API need Login
 		await this.Login()
 		
-		// convert https://www.pixiv.net/search.php?word=%E9%BB%92%E3%82%BF%E3%82%A4%E3%83%84&order=date_d&p=4 to
-		// { word: '%E9%BB%92%E3%82%BF%E3%82%A4%E3%83%84', order: 'date_d', p: '4' }
+		// https://www.pixiv.net/tags/%E9%BB%92%E3%82%BF%E3%82%A4%E3%83%84/artworks?p=4
+		if (this.verbose) {
+			console.log(`Parsing Page: ${url}`)
+		}
+		const query = url.match(/\/tags\/(.*)\//)[1]
 		const searchParams = new URLSearchParams(new URL(url).search)
-		const query = decodeURIComponent(searchParams.get('word'))
 		const pageIndex = searchParams.has('p') ? parseInt(searchParams.get('p')) : 1
 
 		const storePath = path.join(this.StoragePath, this.GetPagePath, `${query}_${pageIndex}`)
