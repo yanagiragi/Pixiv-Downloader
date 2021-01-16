@@ -73,8 +73,8 @@ async function GetUserIllustName(yrPixivInstance, userid) {
 function ParseIllustsInfoToDownloadInfo(illustInfo) {
 	const illusts = []
 	illustInfo.illusts.map(ele => {
-		if (ele.metaPages.length === 0) { // single pic in single illust
-			const url = ele.metaSinglePage.originalImageUrl
+		if (ele.meta_pages.length === 0) { // single pic in single illust
+			const url = ele.meta_single_page.original_image_url
 			const mime = url.substring(url.length - 4)
 			const filename = `${ele.id}-${sanitize(ele.title)}${mime}`
 			const savePath = illustInfo.storePath
@@ -82,8 +82,8 @@ function ParseIllustsInfoToDownloadInfo(illustInfo) {
 		} 
 		else { // multiple pictures in single illust        
 			const savePath = path.join(illustInfo.storePath, `${ele.id}-${ele.title}`)
-			ele.metaPages.map((ele2, index) => {
-				const url = ele2.imageUrls.original
+			ele.meta_pages.map((ele2, index) => {
+				const url = ele2.image_urls.original
 				const mime = url.substring(url.length - 4)
 				const filename = `${ele.id}-${sanitize(ele.title)}_p${index}${mime}`
 				illusts.push({url, savePath, filename})

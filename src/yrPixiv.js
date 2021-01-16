@@ -3,7 +3,8 @@ const path = require('path')
 const pMap = require('p-map')
 const fetch = require('node-fetch')
 
-const Pixiv = require('pixiv-app-api')
+//const Pixiv = require('pixiv-app-api')
+const Pixiv = require('pixiv-api-client');
 
 const utils = require('./utils')
 const Illusts = require('./Illusts')
@@ -44,9 +45,9 @@ class yrPixiv {
 		
 		// backup config
 		this.Config = config
-
+		
 		// setup pixiv-app-api instance
-		this.Pixiv = new Pixiv(Account, Password)		
+		this.Pixiv = new Pixiv()
 
 		// updated after Login()
 		this.accessToken = ''
@@ -76,7 +77,7 @@ class yrPixiv {
 	}
 
 	async Login() {
-		const userInfo = await this.Pixiv.login(this.Pixiv.username, this.Pixiv.password)
+		const userInfo = await this.Pixiv.login(this.Config.Account, this.Config.Password)
 		this.selfId = userInfo.user.id
 		this.accessToken = userInfo.access_token
 	}
@@ -219,7 +220,7 @@ class yrPixiv {
 				}
 			} catch (err) {
 				if (this.verbose) {
-					console.log(`Failed On ${userInfo.id}-${userInfo.name}, Error: ${err}`)
+					console.log(`Failed On ${userInfo.id}-${userInfo.name}, Error: ${JSON.stringify(err)}`)
 				}
 				if (err.toString() != 'HTTPError: Response code 404 (Not Found)') { // avoid loop when picture return 404
 					errUsers.push(userInfo)

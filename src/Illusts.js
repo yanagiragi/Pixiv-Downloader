@@ -12,8 +12,12 @@ async function GetUserIllustsInfo(yrPixivInstance, userInfo) {
 		userIllustsInfo.illusts.push(info)
 	}
 
-	while (yrPixivInstance.Pixiv.hasNext()) {
-		currentInfo = await yrPixivInstance.Pixiv.next()    
+	if (yrPixivInstance.verbose){
+		console.log(JSON.stringify(currentInfo))
+	}
+
+	while (currentInfo.next_url != null) {
+		currentInfo = await yrPixivInstance.Pixiv.requestUrl(currentInfo.next_url)
 		for (const info of currentInfo.illusts) {
 			userIllustsInfo.illusts.push(info)
 		}
@@ -31,8 +35,8 @@ async function GetDailyIllustsInfo(yrPixivInstance) {
 		rankingInfo.illusts.push(info)
 	}
 
-	while (yrPixivInstance.Pixiv.hasNext()) {
-		currentInfo = await yrPixivInstance.Pixiv.next()
+	while (currentInfo.next_url != null) {
+		currentInfo = await yrPixivInstance.Pixiv.requestUrl(currentInfo.next_url)
 		for( const info of currentInfo.illusts) {
 			rankingInfo.illusts.push(info)
 		}           
@@ -52,8 +56,8 @@ async function GetSearchIllustsInfo(yrPixivInstance, query, pageIndex) {
 		searchInfo.illusts.push(info)
 	}
     
-	while (yrPixivInstance.Pixiv.hasNext() && searchInfo.illusts.length < searchResultPerPage * pageIndex) {
-		currentInfo = await yrPixivInstance.Pixiv.next()
+	while (currentInfo.next_url != null && searchInfo.illusts.length < searchResultPerPage * pageIndex) {
+		currentInfo = await yrPixivInstance.Pixiv.requestUrl(currentInfo.next_url)
 		for( const info of currentInfo.illusts) {
 			searchInfo.illusts.push(info)
 		}           
