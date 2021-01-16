@@ -166,25 +166,6 @@ class yrPixiv {
 		}
 	}
 	
-	async AddFollow(userInfo) {
-		// Pixiv-App-Api Not Work, use native way from upbit/pixivpy
-		const url = 'https://public-api.secure.pixiv.net/v1/me/favorite-users.json'
-		const options = {
-			method: 'POST',
-			
-			headers : {
-				'Referer': 'http://spapi.pixiv.net/',
-				'User-Agent': 'PixivIOSApp/5.8.7',
-				'Authorization': `Bearer ${this.accessToken}`
-			},
-			form : {
-				'target_user_id': userInfo.id,
-				'publicity': 'public'
-			}
-		}
-		return fetch(url, options)
-	}
-
 	// APIs for cli.js
 
 	async GetFollowing() {		
@@ -325,7 +306,6 @@ class yrPixiv {
 		await this.Login()
 		await sourcePixiv.Login()
 
-
 		const sourceFollowingInfo = await Follow.GetFollowingInfo(sourcePixiv)
 		const followingInfo = await Follow.GetFollowingInfo(this)
 		const followingIds = followingInfo.map(x => x.id)
@@ -336,7 +316,7 @@ class yrPixiv {
 		}
 
 		for(const userInfo of unfollowInfos) {
-			await this.AddFollow(userInfo)
+			const resp = await this.Pixiv.followUser(userInfo.id)
 			console.log(`Follow ${userInfo.id}-${userInfo.name}.`)
 		}
 	}
