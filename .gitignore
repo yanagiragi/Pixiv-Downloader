@@ -53,3 +53,6 @@ bin/Storage/
 _auth
 
 bin/yrPixiv.config.json
+
+bin/setting.json
+bin/cache.json

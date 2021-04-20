@@ -1,6 +1,6 @@
 {
   "name": "pixiv_downloader",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Pixiv Download Tool based on pixiv-app-client",
   "bin": {
     "yrPixiv": "bin/cli.js"
@@ -22,11 +22,8 @@
   },
   "dependencies": {
     "fs": "0.0.1-security",
-    "fs-extra": "^8.1.0",
     "minimist": "^1.2.5",
     "node-fetch": "^2.6.1",
-    "p-map": "^3.0.0",
-    "pixiv-api-client": "^0.24.0",
     "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {
