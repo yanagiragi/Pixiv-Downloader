@@ -58,7 +58,7 @@ async function GetPixivImage (url, storePath, filename) {
 		if (fs.existsSync(savePath)) {
 			return true
 		}
-		const response = await fetch(url, { encoding : 'binary', timeout: 1000 * 100 })
+		const response = await fetch(url, { encoding : 'binary', timeout: 1000 * 100, headers: { 'Referer': 'https://www.pixiv.net/' } })
 		if (!response.ok) return false
 		const body = await response.buffer()
 		fs.writeFileSync(savePath, body, 'binary')
@@ -118,6 +118,10 @@ async function DealUserIllusts(setting, caches) {
 
 		for(let i = 0; i < illustIds.length; ++i) {
 			const illustId = illustIds[i]
+			if (verbose) {
+				console.log(`Checking [${id}-${name}]: ${i+1}/${illustIds.length}: ${illustId}`)
+			}
+
 			if (cache.includes(illustId)) {
 				if (verbose)
 					console.log(`Skip ${illustId}`)
@@ -129,8 +133,8 @@ async function DealUserIllusts(setting, caches) {
 				console.log(`Error when fetching ${illustId}. Skipped`)
 				continue
 			}
-
-			console.log(`Downloading ${i+1}/${illustIds.length}: ${illustId}`)
+			
+			console.log(`Downloading [${id}-${name}]: ${i+1}/${illustIds.length}: ${illustId}`)
 			
 			let count = 0, canDonwload = true
 			do {
