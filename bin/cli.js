@@ -7,8 +7,8 @@ const sanitize = require('sanitize-filename')
 
 const args = minimist(process.argv.slice(2))
 const sessionId = args.i
-const settingPath = args.s ?? 'setting.json'
-const cachePath = args.c ?? 'cache.json'
+const settingPath = args.s ?? path.join(__dirname,'data', 'setting.json')
+const cachePath = args.c ?? path.join(__dirname, 'data', 'cache.json')
 const verbose = args.v === 'true'
 
 const StoragePath = path.join(__dirname, 'Storage')
