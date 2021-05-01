@@ -170,5 +170,15 @@ async function Run() {
 }
 
 if (require.main === module) {
-	Run()
+
+	console.log(`=====================================`)
+	console.log(`Session: ${sessionId}`)
+	console.log(`=====================================`)
+
+	if (sessionId == null) {
+		console.log('Session cannot be null. Abort.')
+	}
+	else {
+		Run()
+	}
 }

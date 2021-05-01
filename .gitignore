@@ -54,5 +54,5 @@ _auth
 
 bin/yrPixiv.config.json
 
-bin/setting.json
-bin/cache.json
+bin/data/setting.json
+bin/data/cache.json

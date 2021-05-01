@@ -3,10 +3,19 @@
 REPO_ROOT=/Pixiv-Downloader
 DOCKER_IMAGE_TAG=pixivdl
 
-SESSION=$1
+SETTINGJSON=${SETTINGJSON:-$REPO_ROOT/bin/data/setting.json}
+CACHEJSON=${SETTINGJSON:-$REPO_ROOT/bin/data/cache.json}
 
-# use docker in rootless mode
-~/bin/docker run -it \
-	-v $(pwd)/Storage:$REPO_ROOT/bin/Storage \
-	$DOCKER_IMAGE_TAG \
-	bash -c "/usr/local/bin/node $REPO_ROOT/bin/cli.js -s settings.json -c cache.json -i $SESSION"
+if [ -z ${SESSION+x} ]; then 
+	echo "SESSION variable is not set. Abort."; 
+else 
+	# use docker in rootless mode
+	cd ~/Pixiv-Downloader/bin && \
+	~/bin/docker run -itd \
+		-v $(pwd)/Storage:$REPO_ROOT/bin/Storage \
+		-v $(pwd)/data:$REPO_ROOT/bin/data \
+		$DOCKER_IMAGE_TAG \
+		bash -c "cd $REPO_ROOT/bin && /usr/local/bin/node cli.js -s  $SETTINGJSON -c $CACHEJSON -i $SESSION"
+		#bash
+fi
+
