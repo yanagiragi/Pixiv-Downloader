@@ -56,6 +56,7 @@ async function GetPixivImage (url, storePath, filename) {
 		EnsureDirExist(storePath)
 		const savePath = path.join(storePath, filename)
 		if (fs.existsSync(savePath)) {
+			if (verbose) console.log(`Skip ${savePath}`)
 			return true
 		}
 		const response = await fetch(url, { encoding : 'binary', timeout: 1000 * 100, headers: { 'Referer': 'https://www.pixiv.net/' } })
