@@ -11,7 +11,7 @@ if [ -z ${SESSION+x} ]; then
 else 
 	# use docker in rootless mode
 	cd ~/Pixiv-Downloader/bin && \
-	~/bin/docker run -it --rm \
+	~/bin/docker run --rm \
 		-v $(pwd)/Storage:$REPO_ROOT/bin/Storage \
 		-v $(pwd)/data:$REPO_ROOT/bin/data \
 		$DOCKER_IMAGE_TAG \
