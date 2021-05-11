@@ -15,7 +15,7 @@ const StoragePath = path.join(__dirname, 'Storage')
 
 /**
  * Create dir if not exists
- * @param {string}} - folder path
+ * @param {string} - folder path
  * @returns {Void}
  */
 function EnsureDirExist(folder)
