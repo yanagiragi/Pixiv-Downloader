@@ -56,3 +56,4 @@ bin/yrPixiv.config.json
 
 bin/data/setting.json
 bin/data/cache.json
+bin/data/corrupted.json

@@ -9,6 +9,7 @@ const args = minimist(process.argv.slice(2))
 const sessionId = args.i
 const settingPath = args.s ?? path.join(__dirname,'data', 'setting.json')
 const cachePath = args.c ?? path.join(__dirname, 'data', 'cache.json')
+const corruptedPath = args.r ?? path.join(__dirname, 'data', 'corrupted.json')
 const verbose = args.v === 'true'
 
 const StoragePath = path.join(__dirname, 'Storage')
@@ -55,10 +56,10 @@ async function GetPixivImage (url, storePath, filename) {
 	try {
 		EnsureDirExist(storePath)
 		const savePath = path.join(storePath, filename)
-		if (fs.existsSync(savePath)) {
+		/*if (fs.existsSync(savePath)) {
 			if (verbose) console.log(`Skip ${savePath}`)
 			return true
-		}
+		}*/
 		const response = await fetch(url, { encoding : 'binary', timeout: 1000 * 100, headers: { 'Referer': 'https://www.pixiv.net/' } })
 		if (!response.ok) return false
 		const body = await response.buffer()
@@ -157,14 +158,18 @@ async function DealUserIllusts(setting, caches) {
  * @param {Void}
  * @returns {Void}
  */
-async function Run() {	
+async function Run() {
 	try {
+		const corrupted = JSON.parse(fs.readFileSync(corruptedPath)).map(x => x.substring(0, x.indexOf('-')))
 		const settings = JSON.parse(fs.readFileSync(settingPath))
 		let caches = fs.existsSync(cachePath) ? JSON.parse(fs.readFileSync(cachePath)) : []
+		let remainedCorrupted = corrupted.filter(x => !caches.includes(x))
+		caches = caches.filter(x => !corrupted.includes(x))
 		for(const setting of settings) {
 			caches = await DealUserIllusts(setting, caches)
 		}
 		fs.writeFileSync(cachePath, JSON.stringify(caches, null, 4))
+		fs.writeFileSync(corruptedPath, JSON.stringify(remainedCorrupted, null, 4))
 	} catch (err) {
 		console.log(err)
 	}
