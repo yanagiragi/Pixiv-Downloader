@@ -116,7 +116,14 @@ async function DealUserIllusts(setting, caches) {
 		
 		const resp = await FetchFromPixiv(`https://www.pixiv.net/ajax/user/${id}/profile/all?lang=ja`)
 		const data = await resp.json()
-		const illustIds = Object.entries(data?.body?.illusts).map(el => el[0])
+		const illusts = data?.body?.illusts
+
+		if (illusts == null) {
+			console.log(`Detect error occurs when fetch illust of [${id}]: ${JSON.stringify(data, null, 4)}`)
+			return cache
+		}
+
+		const illustIds = Object.entries(illusts).map(el => el[0])
 
 		for(let i = 0; i < illustIds.length; ++i) {
 			const illustId = illustIds[i]
