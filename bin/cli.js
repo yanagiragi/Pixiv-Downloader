@@ -65,7 +65,11 @@ async function GetPixivImage (url, storePath, filename, illustId) {
 			return true
 		}*/
 		const response = await fetch(url, { encoding: 'binary', timeout: 1000 * 100, headers: { 'Referer': 'https://www.pixiv.net/' } })
-		if (!response.ok) return false
+		if (!response.ok) {
+			console.log(`Unable to download ${illustId}, url = ${url}`)
+			return false
+		}
+
 		const body = await response.buffer()
 		fs.writeFileSync(savePath, body, 'binary')
 		console.log(`Stored https://www.pixiv.net/artworks/${illustId} to ${savePath}`)
@@ -108,19 +112,12 @@ async function GetPixivImage (url, storePath, filename, illustId) {
  */
 async function GetImageUrlAndTitle (illustId) {
 	try {
-		const resp = await FetchFromPixiv(`https://www.pixiv.net/artworks/${illustId}`)
-		const data = await resp.text()
-		const raw = data.match(/id="meta-preload-data" content='(.*)'>/)
-		if (raw?.[1] == null) {
-			console.log(`Unable to find raw[1] in ${raw}`)
-			return [null, null, null]
-		}
-		const json = JSON.parse(raw[1])
-		const src = json?.illust?.[illustId]?.urls?.original
-		const title = json?.illust?.[illustId]?.title
-		const filename = src.match(/\d+_[p|ugoira]/)[0]
-		const prefix = src.substring(0, src.indexOf(filename) + filename.length)
-		const postfix = src.substring(src.indexOf(filename) + filename.length + 1, src.length)
+		const resp = await FetchFromPixiv(`https://www.pixiv.net/ajax/illust/${illustId}?lang=ja`)
+		const data = await resp.json()
+		const title = data?.body?.illustTitle
+		const url = data?.body?.urls?.original
+		const prefix = url.substring(0, url.indexOf(illustId) + illustId.length + '_p'.length)
+		const postfix = path.extname(url)
 		return [sanitize(title), prefix, postfix]
 	} catch (err) {
 		console.log(err)
