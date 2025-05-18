@@ -66,7 +66,6 @@ async function GetPixivImage (url, storePath, filename, illustId) {
 		}*/
 		const response = await fetch(url, { encoding: 'binary', timeout: 1000 * 100, headers: { 'Referer': 'https://www.pixiv.net/' } })
 		if (!response.ok) {
-			console.log(`Unable to download ${illustId}, url = ${url}`)
 			return false
 		}
 
@@ -108,7 +107,7 @@ async function GetPixivImage (url, storePath, filename, illustId) {
 /**
  * Return fetch results of the illustId
  * @param {string} illustId - id of the illust
- * @returns {[string, [string, string]]} [ title of the image, [ prefix of the url of the image, postfix of the url of the image ] ]
+ * @returns {[string, string[]]} [ title of the image, image urls of the illust ]
  */
 async function GetImageUrlAndTitle (illustId) {
 	try {
@@ -118,10 +117,11 @@ async function GetImageUrlAndTitle (illustId) {
 		const url = data?.body?.urls?.original
 		const prefix = url.substring(0, url.indexOf(illustId) + illustId.length + '_p'.length)
 		const postfix = path.extname(url)
-		return [sanitize(title), prefix, postfix]
+		const pageCount = data?.body?.pageCount
+		return [sanitize(title), new Array(pageCount).fill(0).map((ele, idx) => `${prefix}${idx}${postfix}`)]
 	} catch (err) {
 		console.log(err)
-		return [null, null, null]
+		return [null, null]
 	}
 }
 
@@ -166,19 +166,21 @@ async function DealUserIllusts (setting, caches) {
 				continue
 			}
 
-			const [title, prefix, postfix] = await GetImageUrlAndTitle(illustId)
+			const [title, urls] = await GetImageUrlAndTitle(illustId)
 			if (title == null) {
 				console.log(`Error when fetching ${illustId}. Skipped`)
 				continue
 			}
 
 			console.log(`Downloading [${id}-${name}]: ${i + 1}/${illustIds.length}: ${illustId}`)
-
-			let count = 0, canDonwload = true
-			do {
-				canDonwload = await GetPixivImage(`${prefix}${count}${postfix}`, path.join(saveFolderPath, `${illustId}-${title}`), `${illustId}-${count}${postfix}`, illustId)
-				count += 1
-			} while (canDonwload)
+			for (let i = 0; i < urls.length; ++i) {
+				const url = urls[i]
+				const postfix = path.extname(url)
+				const donwloaded = await GetPixivImage(url, path.join(saveFolderPath, `${illustId}-${title}`), `${illustId}-${i}${postfix}`, illustId)
+				if (!donwloaded) {
+					console.log(`Unable to download ${illustId}, url = ${url}`)
+				}
+			}
 
 			cache.push(illustId)
 		}
