@@ -69,8 +69,9 @@ async function GetPixivImage (url, storePath, filename, illustId) {
 			return false
 		}
 
-		const body = await response.buffer()
-		fs.writeFileSync(savePath, body, 'binary')
+		const arrayBuffer = await response.arrayBuffer()
+		const buffer = Buffer.from(arrayBuffer)
+		fs.writeFileSync(savePath, buffer, 'binary')
 		console.log(`Stored https://www.pixiv.net/artworks/${illustId} to ${savePath}`)
 
 		if (webhookUrl) {
